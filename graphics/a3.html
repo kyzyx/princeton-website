@@ -1,0 +1,764 @@
+<HTML>
+<HEAD>
+<TITLE>
+COS 426 Assignment 3
+</TITLE>
+<BODY>
+<CENTER>
+<H2>
+COS 426, Spring 2011<BR>
+Edward Zhang, edwardz<BR>           <!-- Fill in your name and login -->
+</H2>
+</CENTER>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>List of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+I believe that I have implemented the following features, which are worth a total of 35 points:
+<H3> Basic Ray Generation </H3>
+<UL>
+  <LI>(1) Generate at ray for each pixel</LI>
+</UL>
+<H3> Ray-Primitive Intersection </H3>
+<UL>
+  <LI>(1) <A href="#primitive">Intersect a ray with a sphere</A></LI>
+  <LI>(1) <A href="#primitive">Intersect a ray with an axis-aligned box</A></LI>
+  <LI>(2) <A href="#primitive">Intersect a ray with a polygonal mesh</A></LI>
+  <LI>(2) <A href="#primitive">Intersect a ray with an axis-aligned cylinder</A></LI>
+</UL>
+<H3> Ray-Scene Intersection </H3>
+<UL>
+  <LI>(1) <A href="#scene">Intersect a ray with a scene</A></LI>
+  <LI>(1) <A href="#transformations">Handle scene traversals with modeling transformations</A></LI>
+  <LI>(1) <A href="#accelerate">Accelerate ray-scene intersections with bounding box checks</A></LI>
+  <LI>(2) <A href="#accelerate">Accelerate ray-scene intersections by visiting nodes front to back</A></LI>
+  <LI>(4) <A href="#accelerate">Accelerate ray-mesh intersections using an octree</A></LI>
+</UL>
+<H3> Illumination </H3>
+<UL>
+  <LI>(2) <A href="#illumination">Phong illumination</A></LI>
+  <LI>(2) <A href="#texture">Texture mapping</A></LI>
+</UL>
+<H3> Shadows </H3>
+<UL>
+  <LI>(1) <A href="#shadow">Shadow rays</A></LI>
+  <LI>(2) <A href="#shadow">Area lights and soft shadow</A></LI>
+</UL>
+<H3> Global Illumination </H3>
+<UL>
+  <LI>(2) <A href="#specular">Specular reflection</A></LI>
+  <LI>(1) <A href="#transmission">Transmission</A></LI>
+  <LI>(2) <A href="#refraction">Refraction</A></LI>
+</UL>
+<H3> Debug </H3>
+<UL>
+  <LI>(2) <A href="#debug">Primary ray visualization</A></LI>
+  <LI>(2) <A href="#debug">Secondary ray visualization</A></LI>
+</UL>
+<H3> Input </H3>
+<UL>
+  <LI>(1) <A href="#input">Make an interesting scene</A></LI>
+  <LI>(1) <A href="#xxx">Movie</A></LI>
+</UL>
+<H3> Art contest </H3>
+<UL>
+  <LI>(1) <A href="#art">Art contest submission</A></LI>
+</UL>
+<HR><BR>
+
+
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Demonstration of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='primitive'>Ray-Primitive intersection</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/sphere.jpg"><IMG width=256 src="output/sphere.jpg"></A><BR>
+       <A href="input/sphere.scn">sphere.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/tri.jpg"><IMG width=256 src="output/tri.jpg"></A><BR>
+       <A href="input/tri.scn">tri.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/ico.jpg"><IMG width=256 src="output/ico.jpg"></A><BR>
+       <A href="input/ico.scn">ico.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/teapot.jpg"><IMG width=256 src="output/teapot.jpg"></A><BR>
+       <A href="input/teapot.scn">teapot.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/box1.jpg"><IMG width=256 src="output/box1.jpg"></A><BR>
+       <A href="input/box1.scn">box1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/box2.jpg"><IMG width=256 src="output/box2.jpg"></A><BR>
+       <A href="input/box2.scn">box2.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/cylinder1.jpg"><IMG width=256 src="output/cylinder1.jpg"></A><BR>
+       <A href="input/cylinder1.scn">cylinder1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/cylinder2.jpg"><IMG width=256 src="output/cylinder2.jpg"></A><BR>
+       <A href="input/cylinder2.scn">cylinder2.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/cone1.jpg"><IMG width=256 src="output/cone1.jpg"></A><BR>
+       <A href="input/cone1.scn">cone1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/cone2.jpg"><IMG width=256 src="output/cone2.jpg"></A><BR>
+       <A href="input/cone2.scn">cone2.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="3">
+        <ul>
+            <li>As recommended in lecture, I used the second parametric method
+            to calculate ray-sphere intersections, which allowed for earlier
+            termination. </li>
+            <li>I implemented an intersectPlane function that determined
+            the intersection point of a ray and a plane. This was used by
+            both intersectTriangle and intersectBox functions. </li>
+            <li> The intersectBox function simply calculated the intersection
+            of the ray with all of the faces of the box and determined the
+            closest one (if any). This was much simpler than handling the
+            edge cases of determining which faces were closest to the ray
+            origin </li>
+            <li> intersectTriangle was implemented using the parametric
+            barycentric-coordinate method described in class. The nuances of
+            signedness of area weren't very clear in the lecture slides, so I
+            had to determine the appropriate sign calculations myself </li>
+
+            <li>After implementing shadow rays, I found that floating point
+            error was non-negligible in many of my intersection functions (since
+            the shadow ray would start from the surface of the primitive).
+            I therefore had to rewrite a lot of comparisons to use an EPSILON
+            of 1e-6 to get the correct results.</li>
+            <li> <b> New: </b>
+            Implementing cylinder intersection was achieved as follows:
+            First I would check for end-cap intersections using plane intersections.
+            Then, I projected the ray and cylinder onto the xz axis and used a
+            similar parametric method to the sphere intersections, which gave
+            the parametric value of any intersections with the infinitely-long
+            cylinder. I then checked the y-coordinate of any intersections to
+            determine if they were valid, before finally comparing all the
+            possible intersections to determine which was the closest.
+            </li>
+        </ul>
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='scene'>Ray-Scene intersection</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/fourspheres.jpg"><IMG width=256 src="output/fourspheres.jpg"></A><BR>
+       <A href="input/fourspheres.scn">fourspheres.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/sixtriangles.jpg"><IMG width=256 src="output/sixtriangles.jpg"></A><BR>
+       <A href="input/sixtriangles.scn">sixtriangles.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/mixedprimitives1.jpg"><IMG width=256 src="output/mixedprimitives1.jpg"></A><BR>
+       <A href="input/mixedprimitives1.scn">mixedprimitives1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/mixedprimitives2.jpg"><IMG width=256 src="output/mixedprimitives2.jpg"></A><BR>
+       <A href="input/mixedprimitives2.scn">mixedprimitives2.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="3">
+        Ray-scene intersection was structured exactly as the pseudocode from
+        the lecture slides was. <p>
+        Originally, the mixedprimitives scenes were giving me trouble because
+        the lower right cube was not displaying correctly. Eventually, I
+        tracked the bug down to a problem in the <code>R3Box</code>
+        constructors (see <a href="#bugs">Bugs</a> below)
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='illumination'>Phong Illumination</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/diffuse.jpg"><IMG width=256 src="output/diffuse.jpg"></A><BR>
+       <A href="input/diffuse.scn">diffuse.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/specular.jpg"><IMG width=256 src="output/specular.jpg"></A><BR>
+       <A href="input/specular.scn">specular.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/shininess.jpg"><IMG width=256 src="output/shininess.jpg"></A><BR>
+       <A href="input/shininess.scn">shininess.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/dirlight1.jpg"><IMG width=256 src="output/dirlight1.jpg"></A><BR>
+       <A href="input/dirlight1.scn">dirlight1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/pointlight1.jpg"><IMG width=256 src="output/pointlight1.jpg"></A><BR>
+       <A href="input/pointlight1.scn">pointlight1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/spotlight1.jpg"><IMG width=256 src="output/spotlight1.jpg"></A><BR>
+       <A href="input/spotlight1.scn">spotlight1.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/dirlight2.jpg"><IMG width=256 src="output/dirlight2.jpg"></A><BR>
+       <A href="input/dirlight2.scn">dirlight2.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/pointlight2.jpg"><IMG width=256 src="output/pointlight2.jpg"></A><BR>
+       <A href="input/pointlight2.scn">pointlight2.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/spotlight2.jpg"><IMG width=256 src="output/spotlight2.jpg"></A><BR>
+       <A href="input/spotlight2.scn">spotlight2.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="3">
+        I separated out the radiance calculation into two parts: one to
+        calculate the contribution of a given R3Light to the radiance at a
+        point, and another to calculate the total radiance at a point.
+        <p> Following the formulae given in the lecture slides was
+        fairly straightforward. <p>
+        I did notice that, without shadows, very
+        boring or unintuitive results were being obtained (e.g. with one
+        directional light source and a single sphere, it looks like there is
+        another light source in the opposite direction as well).
+        I therefore decided
+        to implement shadows as well. (All of the images are shown with
+        shadows enabled).
+    </TD>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='texture'>Texture</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/texture.jpg"><IMG width=256 src="output/texture.jpg"></A><BR>
+       <A href="input/texture.scn">texture.scn</A>
+   </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/texturebox.jpg"><IMG width=256 src="output/texturebox.jpg"></A><BR>
+       <A href="input/texturebox.scn">texturebox.scn</A>
+   </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="2">
+        I implemented texture mapping for spheres as well as for boxes. Both
+        methods relied on antialiasing sampling, so I copied in my assignment 1
+        implementation of R2Image for these functions.
+        <ul>
+            <li>We map coordinates on the surface of the sphere to the surface of
+            the unit sphere, and then map that to coordinates
+            in the unit square as follows: We get the angle from the z-axis
+            directly from the inverse cosine of the z-coordinate, which gives a
+            value between 0 and &pi; which maps to the y-coordinate on the texture.
+            The x-coordinate is calculated as the angle from the positive y-axis
+            scaled by 2&pi;.
+            </li>
+            <li>For the purposes of my scene, I also implemented simple
+            texture mapping for boxes. For these, I simply map each face of the
+            box to a copy of the texture with arbitrary orientation, so that
+            the coordinates in the texture directly correspond to the distance from
+            the intersection point to the neighboring edges of the face</li>
+        </ul>
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='shadow'>Shadows</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/hardshadow.jpg"><IMG width=256 src="output/hardshadow.jpg"></A><BR>
+       <A href="input/hardshadow.scn">hardshadow.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/softshadow16.jpg"><IMG width=256 src="output/softshadow16.jpg"></A><BR>
+       <A href="input/softshadow.scn">softshadow.scn</A> with 16 rays
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/softshadow256.jpg"><IMG width=256 src="output/softshadow256.jpg"></A><BR>
+       <A href="input/softshadow.scn">softshadow.scn</A> with 256 rays
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="3">
+          Shadows were implemented as suggested in the lecture slides, and
+          really only involved 3 more lines of code. I cast a shadow ray
+          from the intersection point towards each light and deemed it a shadow
+          if there was a hit and the light was directional (since the light
+          source is infinitely far away) or the intersection is closer
+          than the light source.<p> As mentioned earlier, this led to
+          refinement of the intersection code to deal with ray sources that
+          were on the surface of primitives.<p>
+          Soft shadows were implemented as suggested in class, by randomly sampling
+          points in the area light to cast rays to. This random sampling was
+          performed by sampling from a unit square and rejecting any points
+          outside the unit circle, and then mapping these points to points on the
+          area light. <p>
+          Casting fewer than about 100 rays resulted in rather speckled soft shadows.
+          However, we can see with 256 shadow rays (above) the shadows look very smooth.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='specular'>Specular Reflection</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/specular.0.jpg"><IMG width=256 src="output/specular.0.jpg"></A><BR>
+       -max_depth 0
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/specular.1.jpg"><IMG width=256 src="output/specular.1.jpg"></A><BR>
+        -max_depth 1
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/specular.2.jpg"><IMG width=256 src="output/specular.2.jpg"></A><BR>
+       -max_depth 2
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+      <A href="input/specular.scn">specular.scn</A><BR>&nbsp;<BR>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/stilllife.0.jpg"><IMG width=256 src="output/stilllife.0.jpg"></A><BR>
+       -max_depth 0
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/stilllife.1.jpg"><IMG width=256 src="output/stilllife.1.jpg"></A><BR>
+        -max_depth 1
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/stilllife.2.jpg"><IMG width=256 src="output/stilllife.2.jpg"></A><BR>
+       -max_depth 2
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+      <A href="input/stilllife.scn">stilllife.scn</A><BR>&nbsp;<BR>
+    </TD>
+  </TR>
+  <TR>
+      <TD vAlign=top align=middle colspan="3">
+          Specular rays were calculated as suggested in the lecture slides.
+          There were two subtleties with specular reflection. The first was
+          floating point error - rays originating from the surface of an object
+          often registered as intersections with that object. The second was that
+          specular illumination only occurs if the light and the ray are on the
+          same side of the intersecting surface.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='transmission'>Transmission</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/transmission.0.jpg"><IMG width=256 src="output/transmission.0.jpg"></A><BR>
+       -max_depth 0
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/transmission.1.jpg"><IMG width=256 src="output/transmission.1.jpg"></A><BR>
+       -max_depth 1
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/transmission.2.jpg"><IMG width=256 src="output/transmission.2.jpg"></A><BR>
+       -max_depth 2
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+      <A href="input/transmission.scn">transmission.scn</A><BR>&nbsp;<BR>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+        Transmission was trivial to implement after implementing refraction -
+        instead of calculating a refracted ray, we simply use the same vector
+        as the primary ray.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='refraction'>Refraction</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/refraction.0.jpg"><IMG width=256 src="output/refraction.0.jpg"></A><BR>
+       -max_depth 0
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/refraction.1.jpg"><IMG width=256 src="output/refraction.1.jpg"></A><BR>
+       -max_depth 1
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/refraction.2.jpg"><IMG width=256 src="output/refraction.2.jpg"></A><BR>
+       -max_depth 2
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+      <A href="input/refraction.scn">refraction.scn</A><BR>&nbsp;<BR>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+        To calculate refractive rays, we simply use the formulae given in the
+        lecture slides and trace an extra ray to add to the radiance. The
+        secondary ray debugging format was extremely helpful in this respect.
+        <p>I did not handle refractive shadow rays.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='transformations'>Handle scene traversals with modeling transformations</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/mixedprimitives3.jpg"><IMG width=256 src="output/mixedprimitives3.jpg"></A><BR>
+       <A href="input/mixedprimitives3.scn">mixedprimitives3.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/transform.jpg"><IMG width=256 src="output/transform.jpg"></A><BR>
+       <A href="input/transform.scn">transform.scn</A>
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+        Implementing transformations was extremely easy, requiring only a couple
+        of lines of code changes. Transforming the ray by the inverse of the
+        node transformation before calculating intersections, and then
+        transforming the normal and point of the intersection by
+        the node intersection (recalculating <i>t</i>) was trivial using the
+        Transform() function in the R3 primitives.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='accelerate'>Ray Intersection Acceleration</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/stack.jpg"><IMG width=256 src="output/stack.jpg"></A><BR>
+       No acceleration (27.367 seconds)
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/stack_bbox.jpg"><IMG width=256 src="output/stack_bbox.jpg"></A><BR>
+       Node bounding box checks (18.858 seconds)
+    </TD>
+</TR>
+<TR>
+    <TD vAlign=top align=middle>
+       <A href="output/stilllife.jpg"><IMG width=256 src="output/stilllife.jpg"></A><BR>
+       No acceleration (26.234 seconds)
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/stilllife_fronttoback.jpg"><IMG width=256 src="output/stilllife_fronttoback.jpg"></A><BR>
+       Front-to-back order (21.635 seconds)
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/teapot.jpg"><IMG width=256 src="output/teapot.jpg"></A><BR>
+       No acceleration (29.585 seconds)
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/teapot_octree.jpg"><IMG width=256 src="output/teapot_octree.jpg"></A><BR>
+       Octree (5.525 seconds)
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/octree.jpg"><IMG width=256 src="output/octree.jpg"></A><BR>
+       Visualization of octree
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top colspan="3">
+        <ul>
+            <li> Node bounding box checks: This was a fairly simple test added
+            before descending into a child node, where we just check whether the ray
+            intersects the box. This also helped clue me in to the fact that
+            floating point error was important, since the bounding box for a box was
+            exactly on its border and often gave me odd speckled effects.
+            <p>Note that this timing information is
+            with the octree acceleration for mesh intersection</li>
+            <li> Front to back order: By refactoring to compute all bounding box
+            intersections before descending into child nodes, we get the opportunity
+            to sort them. This was very easy with the aid of the C++ STL sort and
+            pair. <p>
+            Note that this timing information is with
+            the octree acceleration for mesh intersection</li>
+            <li>Octree: I implemented the octree in a separate R3Octree file.
+            Each R3Mesh then has an optional octree object. <p>
+            The octree does everything by mapping the bounding box of the mesh
+            into the unit square. Each child node is another R3Octree object with
+            its own list of faces. <p> Octree creation involves one main method:
+            the Split method, which initializes the 8 children of a node and
+            adds faces to the children if the faces intersect the child's box.
+            This recursion is limited in two ways: we set a maximum depth of
+            the tree, which was empirically optimal at about 3 or 4 levels, and by
+            number of faces in a node - if there are 2 or fewer faces in a box, then
+            there is no need to subdivide further. <p>
+            Triangle-box intersection is rather difficult, and involves several
+            checks: I used a method similar to the one in
+            <a href="http://www.vhml.org/theses/usher/node28.html">http://www.vhml.org/theses/usher/node28.html</a>, which first checks the easy cases of whether
+            one of the triangle vertices is inside the box or if the triangle lies
+            completely to one side of the box. After these simple tests, we have
+            to check whether any of the triangle's edges intersect the box (using a
+            simple adaptation of the intersectBox method that checks the other
+            endpoint of a segment instead of a ray). Then, we check whether an edge
+            of the box intersects the triangle (using a similarly adapted version of
+            the intersectTriangle method) <p>
+            Intersection checks are very similar to the scene intersection checks;
+            we perform the same sorting of child nodes by bounding box intersection
+            and then recurse into the appropriate nodes. The only difference is that
+            our intersection check makes sure that any intersection of a face
+            actually occurs inside the node that it is calculated for - thus, we
+            can terminate immediately when an intersection is found</li>
+        </ul>
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+
+<H3><A name='debug'>Visual Debugging</A></H3>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/primary.jpg"><IMG width=256 src="output/primary.jpg"></A><BR>
+       Primary rays
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/secondary1.jpg"><IMG width=256 src="output/secondary1.jpg"></A><BR>
+       Secondary rays (-max_depth 1)
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/secondary2.jpg"><IMG width=256 src="output/secondary2.jpg"></A><BR>
+       Secondary rays (-max_depth 2)
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="3">
+        I implemented visual debugging as part of the rayview program, which
+        made interactively viewing rays a lot easier. This required several changes.
+        First, I made an alternate version of ComputeRadiance that eliminated the
+        actual radiance calculation and only did the intersection computation (but
+        was otherwise identical). For each ray intersection, I added a segment
+        shape to the scene of an appropriate color: blue for primary ray
+        intersections, magenta for missed primary rays, red for secondary rays,
+        and green for tertiary (and all subsequent) rays.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2><A name='input'>Scene File</A></H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0 vAlign=top align=middle>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="art/coffee.jpg"><IMG width=512 src="art/coffee.jpg"></A><BR>
+       <a href="input/coffee.scn">coffee.scn</a><br>
+       My scene file is of a hand dipping a donut into a coffee cup. This takes place
+       in a room with two spot lights in the corners on a checkered table. <p>
+       My scene made heavy use of the nested transformations, which allowed me to
+       tweak the rotation/orientation of the hand without affecting its position.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2><A name='art'>Art Contest Submission</A></H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0 vAlign=top align=middle>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="art/octreeblooper.jpg"><IMG width=256 src="art/octreeblooper.jpg"></A><BR>
+       This was the result of a sign mistake in my octree code.
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="art/shadowoops.jpg"><IMG width=256 src="art/shadowoops.jpg"></A><BR>
+       This was one of the preliminary results of my shadow code - it made very
+       regular patterns that looked pretty cool, so I saved the image.
+    </TD>
+</TR>
+<TR>
+    <TD vAlign=top align=middle>
+       <A href="art/octree.jpg"><IMG width=512 src="art/octree.jpg"></A><BR>
+       This is a visualization of my octree structure
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="art/coffee.jpg"><IMG width=512 src="art/coffee.jpg"></A><BR>
+       <a href="arg/coffee.avi">>This is a movie of my scene file.</a>
+       It slowly turns the lights on, then
+       rotates around the table of a hand dipping a donut into a cup of coffee,
+       gradually getting closer to the hand. <p> I had written a debugging script
+       that generated camera settings for a full rotation around a point in a scene,
+       so I just adapted that code to parameterize the distance and height in the
+       scene.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Feedback</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<DL>
+  <DT>How long did you spend on this assignment?
+  <DD>Your answer goes here
+  <BR>&nbsp;<BR>
+
+  <DT>Was it too hard, too easy, or just right?
+  <DD>Your answer goes here
+  <BR>&nbsp;<BR>
+
+  <DT>What was the best part of the assignment?
+  <DD>Your answer goes here
+  <BR>&nbsp;<BR>
+
+  <DT>What was the worst part of the assignment?
+  <DD>Your answer goes here
+  <BR>&nbsp;<BR>
+
+  <DT>How could it be improved for next year?
+  <DD>Your answer goes here
+  <BR>&nbsp;<BR>
+
+</DL>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+
+</BODY>
+</HTML>

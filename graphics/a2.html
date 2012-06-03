@@ -1,0 +1,597 @@
+<HTML>
+<HEAD>
+<TITLE>
+COS 426 Assignment 2
+</TITLE>
+<BODY>
+<CENTER>
+<H2>
+COS 426, Spring 2012<BR>
+Edward Zhang, edwardz<BR>           <!-- Fill in your name and login -->
+</H2>
+</CENTER>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>List of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+I believe that I have implemented the following features, which are worth a total of 30 points:
+<h4>Required (Total 14):</h4>
+<UL>
+  <LI>(1) <A href="#edgelen">Average Edge Length</A></LI>
+  <LI>(1) <A href="#normals">Per Vertex Normals</A></LI>
+  <LI>(1) <A href="#randomnoise">Random Noise</A></LI>
+  <LI>(2) <A href="#smooth">Smooth</A></LI>
+  <LI>(3) <A href="#truncate">Truncate</A></LI>
+  <LI>(2) <A href="#split">Split Faces</A></LI>
+  <LI>(2) <A href="#loop">Loop Subdivision</A></LI>
+  <LI>(2) <A href="#surface">Surface of Revolution</A></LI>
+</UL>
+<h4>Optional (Total 16):</h4>
+<UL>
+  <LI>(3) <A href="#curv">Per-Vertex Gaussian Curvature</A></LI>
+  <LI>(0.5) <A href="#inflate">Inflate</A></LI>
+  <LI>(0.5) <A href="#fun">Fun (Pinch)</A></LI>
+  <LI>(1) <A href="#sharpen">Sharpen</A></LI>
+  <LI>(3) <A href="#bevel">Bevel</A></LI>
+  <LI>(2) <A href="#star">Star Faces</A></LI>
+  <LI>(3) <A href="#long">Split Long Edges (Longest edge first)</A></LI>
+  <LI>(2) <A href="#crop">Crop</A></LI>
+  <LI>(1) <A href="#art">Art contest submission</A></LI>
+</UL>
+<HR><BR>
+
+<H2>Half-Edge Data Structure</H2>
+The fundamental data structure I used was the half-edge data structure. I
+added the following class to <code> R3Mesh.h </code>:
+<pre>
+struct R3HalfEdge {
+    R3HalfEdge* twin;
+    R3HalfEdge* next;
+    R3MeshVertex* source;
+    R3MeshFace* face;
+    int id;
+};
+</pre>
+These fields are all as described in precept. I also added a <code>R3HalfEdge*
+edge</code> field to each <code>R3MeshFace</code> object and a <code>R3HalfEdge*
+out</code> field to each <code>R3MeshVertex</code> object.
+<p>
+In general, none of these fields are <code>NULL</code>. There were a few boundary cases that I made decisions for:
+<ul>
+    <li> Disconnected vertices: Disconnected vertices have no outedge. Therefore,
+    for these vertices <code>v-&gt;out == NULL</code> </li>
+    <li> Boundary edges: Boundary edges potentially have no twin edge. However, I
+    made the observation that boundaries must necessarily be closed - this means
+    that we can effectively add a "virtual" face to each closed boundary. <p>
+    Thus, we can initialize twin edges to halfedges on a boundary with the
+    necessary pointers to <code>next, source, twin</code>. To denote a virtual
+    face, we set <code>face = NULL</code><p>This make traversing boundaries
+    much easier.</li>
+</ul>
+Constructing the halfedge data structure is performed in the
+<code>R3Mesh::UpdateHalfEdges()</code> function. This simply iterates over all
+the faces and adds the relevant halfedges, as described in precept. There were
+a couple subtleties, described below:
+<ul>
+    <li>We must be careful that we don't add the same halfedge twice - this may
+    occur if vertices are given in clockwise order and counterclockwise order
+    in adjacent faces. This is accomplished by keeping a map between an
+    <code>Edge</code> (which is simply
+    <code> typedef pair<R3MeshVertex*, R3MeshVertex*> Edge; </code>) and
+    a halfedge. Then, before traversing a face we determine if any of the
+    edges have already been added; if so, then we must reverse the order. Since
+    each edge is incident on only two faces, this will always result in new
+    halfedges </li>
+    <li> The <code>Edge</code> to halfedge map used above is also used to add
+    twin edges to added halfedges </li>
+    <li> Boundary edges require a bit more thought. First, we find boundaries
+    by looking for halfedges without a twin (since we couldn't have added
+    halfedges if there was no associated face) and creating a twin.<p> Then, we
+    iterate over all these new halfedges and find the corresponding next halfedge
+    by iterating over all edges incident on the vertex
+    <code>halfedge-&gt;next-&gt;source</code>.
+</ul>
+These considerations ensure that we have a well-formed half-edge data structure.
+Note that we do not have to update this data structure if we are only translating
+vertices - thus, smoothening, sharpening, and our fun transformation do not
+require recomputing the halfedge data structure.
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Demonstration of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<!--===========================================-->
+<hr><br><h3><a name='normals'>Vertex Normals</a></h3><pre>meshpro input/ico.off output/writeup_Vertex.off </pre><table>
+<tr><td><a href = 'output/writeup_Vertex.jpg'> <img width=350 src='output/writeup_Vertex.jpg'></a></td>
+</tr>
+<tr><td align='center'>Vertex Normals</td>
+</tr>
+</table><br>
+each vertex and taking a weighted average of the normals of the faces. <p>
+This traversal was accomplished as follows: the first face for a vertex
+<code>v</code> was <code>v->out->face</code>; subsequent faces were then
+simply <code>(v->out->twin->next)->face</code>, finding the next outedge by
+taking the next halfedge of the twin halfedge of the current outedge.
+<hr><br><h3><a name='randomnoise'>Random Noise</a></h3><pre>meshpro input/cheetah.off output/writeup_Random.off -noise %s</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Random0.1.jpg'> <img width=350 src='output/writeup_Random0.1.jpg'></a></td>
+<td><a href = 'output/writeup_Random0.2.jpg'> <img width=350 src='output/writeup_Random0.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Random Noise 0.1</td>
+<td align='center'>Random Noise 0.2</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Random20.4.jpg'> <img width=350 src='output/writeup_Random20.4.jpg'></a></td>
+<td><a href = 'output/writeup_Random20.8.jpg'> <img width=350 src='output/writeup_Random20.8.jpg'></a></td>
+<td><a href = 'output/writeup_Random21.jpg'> <img width=350 src='output/writeup_Random21.jpg'></a></td>
+</tr>
+<tr><td align='center'>Random Noise 0.4</td>
+<td align='center'>Random Noise 0.8</td>
+<td align='center'>Random Noise 1</td>
+</tr>
+</table><br>
+Random noise was implemented as described in the spec:
+we generated a random vector for each vertex, normalized it, and multiplied it
+by the average length of the edges attached to the vertex and the supplied
+factor. We then displaced each vertex by the resulting vector.
+<hr><br><h3><a name='smooth'>Smooth</a></h3><pre>meshpro input/cheetah.off output/writeup_Smooth.off -smooth
+</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Smooth1.jpg'> <img width=350 src='output/writeup_Smooth1.jpg'></a></td>
+<td><a href = 'output/writeup_Smooth2.jpg'> <img width=350 src='output/writeup_Smooth2.jpg'></a></td>
+<td><a href = 'output/writeup_Smooth3.jpg'> <img width=350 src='output/writeup_Smooth3.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Smoothened x1</td>
+<td align='center'>Smoothened x2</td>
+<td align='center'>Smoothened x3</td>
+</tr>
+</table><br>
+Smoothing required us to keep a separate copy of the input mesh
+while we calculated new positions for the output mesh. We averaged the
+vectors from each vertex to each of its immediate neighbors,
+with weights determined by a Gaussian with sigma equal to the average length
+of edges attached to the vertex. We then displace the vertex by this calculated
+vector. The update occurs on the output mesh while
+the averaging is computed on the copy of the input mesh.
+<hr><br><h3><a name='truncate'>Truncate</a></h3><pre>meshpro input/ico.off output/writeup_Truncate.off -truncate %s</pre><table>
+<tr><td><a href = 'output/ico.jpg'> <img width=350 src='output/ico.jpg'></a></td>
+<td><a href = 'output/writeup_Truncate0.1.jpg'> <img width=350 src='output/writeup_Truncate0.1.jpg'></a></td>
+<td><a href = 'output/writeup_Truncate0.2.jpg'> <img width=350 src='output/writeup_Truncate0.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Truncate vertices by 0.1</td>
+<td align='center'>Truncate vertices by 0.2</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Truncate20.3.jpg'> <img width=350 src='output/writeup_Truncate20.3.jpg'></a></td>
+<td><a href = 'output/writeup_Truncate20.5.jpg'> <img width=350 src='output/writeup_Truncate20.5.jpg'></a></td>
+</tr>
+<tr><td align='center'>Truncate vertices by 0.3</td>
+<td align='center'>Truncate vertices by 0.5</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Truncate3.jpg'> <img width=350 src='output/writeup_Truncate3.jpg'></a></td>
+</tr>
+<tr><td align='center'>Truncate vertices by .3 twice</td>
+</tr>
+</table><br>
+Truncate used the following algorithm
+<ol>
+<li>Generate all new vertices - for each halfedge, we put a new vertex
+<i>t</i> of the way from its <code>source</code> to its
+<code>next->source</code>. The only subtlety is, if <i>t</i>=0.5, then there
+is only one vertex for each pair of halfedges. We keep track of new vertices
+by using a map from halfedge to new vertex</li>
+<li>Generate faces for truncated vertices - each vertex on the old mesh now
+has a new face with a number of vertices equal to the number of outedges it had
+previously. Conveniently, these vertices correspond exactly to the halfedge to
+vertec map we constructed while adding new vertices. </li>
+<li>Generate faces corresponding to old faces - now we iterate over each
+face's halfedges. For each edge in the old face, there are two new
+vertices (or only one if <i>t</i>=0.5). These vertices are simply the ones
+that are associated with the face's halfedges and the twins of those halfedges </li>
+</ol>
+<hr><br><h3><a name='split'>Divide Faces</a></h3><pre>meshpro input/ico.off output/writeup_Divide.off -splitfaces</pre><table>
+<tr><td><a href = 'output/ico.jpg'> <img width=350 src='output/ico.jpg'></a></td>
+<td><a href = 'output/writeup_Divide1.jpg'> <img width=350 src='output/writeup_Divide1.jpg'></a></td>
+<td><a href = 'output/writeup_Divide2.jpg'> <img width=350 src='output/writeup_Divide2.jpg'></a></td>
+<td><a href = 'output/writeup_Divide3.jpg'> <img width=350 src='output/writeup_Divide3.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Split faces 1 times</td>
+<td align='center'>Split faces 2 times</td>
+<td align='center'>Split faces 3 times</td>
+</tr>
+</table><br>
+Splitting faces made use of a subroutine to make Loop subdivision easier.
+This subroutine was called <code>R3Mesh::MidpointSplit()</code>, which
+split each face into K+1 faces (where K is the number of vertices on the face)
+by connecting adjacent edge midpoints. This function worked in two passes:
+in the first pass it iterated over all faces and created the edge midpoints and
+the central face; the second pass iterated over each vertex of each face and
+added the face corresponding to that vertex. <p> This subroutine took one
+parameter that, given the two endpoints of an edge, determined the coordinates
+of the corresponding edge midpoint. For splitting faces, these coordinates were
+simply the midpoint of the edge. However, for loop subdivision, a different
+function was used.
+<hr><br><h3><a name='loop'>Loop Subdivision</a></h3><pre>meshpro input/ico.off output/writeup_Loop.off -loop</pre><table>
+<tr><td><a href = 'output/ico.jpg'> <img width=350 src='output/ico.jpg'></a></td>
+<td><a href = 'output/writeup_Loop1.jpg'> <img width=350 src='output/writeup_Loop1.jpg'></a></td>
+<td><a href = 'output/writeup_Loop2.jpg'> <img width=350 src='output/writeup_Loop2.jpg'></a></td>
+<td><a href = 'output/writeup_Loop3.jpg'> <img width=350 src='output/writeup_Loop3.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Loop subdivision 1 times</td>
+<td align='center'>Loop subdivision 2 times</td>
+<td align='center'>Loop subdivision 3 times</td>
+</tr>
+</table><br>
+Loop subdivision used the <code>R3Mesh::MidpointSplit()</code> method, but
+repositioned midpoints according to the Loop subdivision weights. After
+performing the midpoint split, the old vertices still had to be repositioned
+according to the Loop algorithm. The algorithm made use of the fact that
+new vertices did not have outedges assigned yet to find the old vertices. Then,
+for each old vertex we took the weighted average of its old position and the
+old positions of each of its neighbors using the Loop weights. <p> Boundary
+vertices were detected because they had no associated face; it was
+a simple matter of traversing the boundary to determine the neighboring
+vertices.
+<hr><br><h3><a name='surface'>Surface of Revolution</a></h3><pre>meshpro input/blank.off output/writeup_Surface.off -revolution input/curv.off 0 0 0 0 0 1 %s</pre><table>
+<tr><td><a href = 'output/writeup_Surface0.2.jpg'> <img width=350 src='output/writeup_Surface0.2.jpg'></a></td>
+<td><a href = 'output/writeup_Surface0.1.jpg'> <img width=350 src='output/writeup_Surface0.1.jpg'></a></td>
+<td><a href = 'output/writeup_Surface0.05.jpg'> <img width=350 src='output/writeup_Surface0.05.jpg'></a></td>
+<td><a href = 'output/writeup_Surface0.01.jpg'> <img width=350 src='output/writeup_Surface0.01.jpg'></a></td>
+</tr>
+<tr><td align='center'>Surface of revolution, step size 0.2</td>
+<td align='center'>Surface of revolution, step size 0.1</td>
+<td align='center'>Surface of revolution, step size 0.05</td>
+<td align='center'>Surface of revolution, step size 0.01</td>
+</tr>
+</table><br>
+A surface of revolution was created as follows: we kept two arrays of vertices
+corresponding to adjacent rotation steps of the input curve. We then
+continually updated them one step at a time, rotating each image by the
+stepsize, and then connecting the two adjacent curve images to create
+quad faces. Finally, we have to connect the initial image and the image after
+the final step.
+<hr><br><h3><a name='curv'>Gaussian Curvature</a></h3><pre>meshpro input/cheetah.off output/writeup_Gaussian.off </pre><table>
+<tr><td><a href = 'output/writeup_Gaussian.jpg'> <img width=350 src='output/writeup_Gaussian.jpg'></a></td>
+<td><a href = 'output/writeup_Gaussian2.jpg'> <img width=350 src='output/writeup_Gaussian2.jpg'></a></td>
+</tr>
+<tr><td align='center'>Gaussian Curvature</td><td align='center'>Gaussian Curvature</td>
+</tr>
+</table><br>
+Gaussian curvature in a triangular mesh was calculated using the formula
+<i>curvature</i> = (<i>angular deficit</i>)/<i>A</i>, where <i>A</i> is some
+area associated with the vertex. <p> The angular deficit is simply 2&pi; minus
+the sum of the incident angles around the vertex. <p> The area associated with
+the vertex was calculated per triangle adjacent to the vertex. We used the
+method suggested by <a>Magid et al.</a> and <a>Meek and Walton</a> which simply
+takes one third of the area of the incident faces (assuming a triangular mesh)
+<hr><br><h3><a name='inflate'>Inflate</a></h3><pre>meshpro input/cheetah.off output/writeup_Inflate.off -inflate %s</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Inflate0.1.jpg'> <img width=350 src='output/writeup_Inflate0.1.jpg'></a></td>
+<td><a href = 'output/writeup_Inflate0.2.jpg'> <img width=350 src='output/writeup_Inflate0.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Inflated by 0.1</td>
+<td align='center'>Inflated by 0.2</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Inflate20.4.jpg'> <img width=350 src='output/writeup_Inflate20.4.jpg'></a></td>
+<td><a href = 'output/writeup_Inflate20.8.jpg'> <img width=350 src='output/writeup_Inflate20.8.jpg'></a></td>
+<td><a href = 'output/writeup_Inflate21.jpg'> <img width=350 src='output/writeup_Inflate21.jpg'></a></td>
+</tr>
+<tr><td align='center'>Inflated by 0.4</td>
+<td align='center'>Inflated by 0.8</td>
+<td align='center'>Inflated by 1</td>
+</tr>
+</table><br>
+Inflate was a very straightforward operation - using the calculated vertex
+normals and the <code>R3Vector::Normalize()</code> function, this
+transformation wrote itself straight from the definition.
+<hr><br><h3><a name='fun'>Fun (Pinch)</a></h3><pre>meshpro input/cheetah.off output/writeup_Fun.off -pinch 0.00001 0.154035 5.20818 %s</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Fun-2.jpg'> <img width=350 src='output/writeup_Fun-2.jpg'></a></td>
+<td><a href = 'output/writeup_Fun-1.jpg'> <img width=350 src='output/writeup_Fun-1.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Pinched by factor -2 around (0.00001 0.154035 5.20818)</td>
+<td align='center'>Pinched by factor -1 around (0.00001 0.154035 5.20818)</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Fun20.5.jpg'> <img width=350 src='output/writeup_Fun20.5.jpg'></a></td>
+<td><a href = 'output/writeup_Fun21.jpg'> <img width=350 src='output/writeup_Fun21.jpg'></a></td>
+<td><a href = 'output/writeup_Fun22.jpg'> <img width=350 src='output/writeup_Fun22.jpg'></a></td>
+</tr>
+<tr><td align='center'>Pinched by factor 0.5 around (0.00001 0.154035 5.20818)</td>
+<td align='center'>Pinched by factor 1 around (0.00001 0.154035 5.20818)</td>
+<td align='center'>Pinched by factor 2 around (0.00001 0.154035 5.20818)</td>
+</tr>
+</table><br>
+My Fun warp was a "pinch" effect. This was inspired by gravity, where the
+"force" on each vertex is dependent on the distance from a specified point.
+The pinch effect takes 4 parameters - the coordinates of a point, and a
+factor that functions like the constant of gravitation. I found that a
+force that dropped off with distance squared (like gravity really would)
+did not create an interesting enough effect, so instead I shifted each vertex
+by the factor divided by its distance from the center of gravity towards the
+point. <p> Note that a negative factor causes all vertices to be "repelled"
+from the point.
+<hr><br><h3><a name='sharpen'>Sharpen</a></h3><pre>meshpro input/cheetah.off output/writeup_Sharpen.off -sharpen
+</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Sharpen1.jpg'> <img width=350 src='output/writeup_Sharpen1.jpg'></a></td>
+<td><a href = 'output/writeup_Sharpen2.jpg'> <img width=350 src='output/writeup_Sharpen2.jpg'></a></td>
+<td><a href = 'output/writeup_Sharpen3.jpg'> <img width=350 src='output/writeup_Sharpen3.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Sharpened x1</td>
+<td align='center'>Sharpened x2</td>
+<td align='center'>Sharpened x3</td>
+</tr>
+</table><br>
+Sharpening is actually exactly the same process as <a href = "#smooth">smoothing<a>, except that instead of adding the average displacement vector we subtract it.
+<hr><br><h3><a name='bevel'>Bevel</a></h3><pre>meshpro input/ico.off output/writeup_Bevel.off -bevel %s</pre><table>
+<tr><td><a href = 'output/ico.jpg'> <img width=350 src='output/ico.jpg'></a></td>
+<td><a href = 'output/writeup_Bevel0.1.jpg'> <img width=350 src='output/writeup_Bevel0.1.jpg'></a></td>
+<td><a href = 'output/writeup_Bevel0.2.jpg'> <img width=350 src='output/writeup_Bevel0.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'> Bevelled by 0.1</td>
+<td align='center'> Bevelled by 0.2</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Bevel20.3.jpg'> <img width=350 src='output/writeup_Bevel20.3.jpg'></a></td>
+<td><a href = 'output/writeup_Bevel20.5.jpg'> <img width=350 src='output/writeup_Bevel20.5.jpg'></a></td>
+</tr>
+<tr><td align='center'> Bevelled by 0.3</td>
+<td align='center'> Bevelled by 0.5</td>
+</tr>
+</table><br>
+Although the bevel operation was presented as an add-on to the truncate
+operation, it turned out to be easier to start again from scratch.
+<ol>
+<li>Add one new face for each old face. As a side effect, this also adds all
+new vertices. The new vertex positions are calculated by calculating the
+position of the corresponding vertices for truncation, and then taking the
+midpoint of the two relevant vertices. Note that each of these new vertices
+is only added by one new face, and therefore we can associate each new vertex
+with one old halfedge. </li>
+<li>Add one new face for each old vertex. As in truncation, we can map
+between halfedges and new vertices. </li>
+<li>We finally add one new face for each old edge. To do this, we simply
+iterate over all the old halfedges (processing each twin pair only once).
+We can determine the vertices on these new faces because the halfedge to
+new vertex map gives us the four vertices associated with
+<code>e, e->next, e->twin, e->twin->next</code></li>
+</ol>
+<hr><br><h3><a name='star'>Star Face</a></h3><pre>meshpro input/ico.off output/writeup_Star.off -starfaces %s</pre><table>
+<tr><td><a href = 'output/ico.jpg'> <img width=350 src='output/ico.jpg'></a></td>
+<td><a href = 'output/writeup_Star-0.2.jpg'> <img width=350 src='output/writeup_Star-0.2.jpg'></a></td>
+<td><a href = 'output/writeup_Star0.1.jpg'> <img width=350 src='output/writeup_Star0.1.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'> Star faces, with factor -0.2</td>
+<td align='center'> Star faces, with factor 0.1</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Star20.2.jpg'> <img width=350 src='output/writeup_Star20.2.jpg'></a></td>
+<td><a href = 'output/writeup_Star20.5.jpg'> <img width=350 src='output/writeup_Star20.5.jpg'></a></td>
+<td><a href = 'output/writeup_Star21.jpg'> <img width=350 src='output/writeup_Star21.jpg'></a></td>
+</tr>
+<tr><td align='center'> Star faces, with factor 0.2</td>
+<td align='center'> Star faces, with factor 0.5</td>
+<td align='center'> Star faces, with factor 1</td>
+</tr>
+</table><br>
+Star faces were formed by iterating over all the faces. We first created the
+median without calculating its position, then in one iteration through the
+vertices of the face we calculate the position of the median and add the faces
+(two adjacent points on the triangle, combined with the median).
+<hr><br><h3><a name='long'>Split Long Edges</a></h3><pre>meshpro input/tetra.off output/writeup_Split.off -splitlongedges %s</pre><table>
+<tr><td><a href = 'output/tetra.jpg'> <img width=350 src='output/tetra.jpg'></a></td>
+<td><a href = 'output/writeup_Split0.6.jpg'> <img width=350 src='output/writeup_Split0.6.jpg'></a></td>
+<td><a href = 'output/writeup_Split1.jpg'> <img width=350 src='output/writeup_Split1.jpg'></a></td>
+<td><a href = 'output/writeup_Split1.2.jpg'> <img width=350 src='output/writeup_Split1.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Split edges longer than 0.6 times mesh radius</td>
+<td align='center'>Split edges longer than 1 times mesh radius</td>
+<td align='center'>Split edges longer than 1.2 times mesh radius</td>
+</tr>
+</table><br>
+Splitting edges longer than a certain length was accomplished using a series of
+steps. I did implement this feature such that longer edges were split first,
+using a priority queue. I used the following algorithm:
+<ol>
+<li>Determine all of the original edges that are too long. Do this by
+iterating over all twin pairs of halfedges and determining their length,
+adding them to the priority queue if they are too long. </li>
+<li>For each edge in the priority queue:<ol>
+<li>Queue both faces to be deleted </li>
+<li>Calculate the midpoint of the long edge and determine if the new
+edges that would be formed to the midpoint are too long; if they are, then
+add them to the priority queue</li><li>For each of the old faces,
+split them into two faces</li></ol></li>
+</ol>
+The process of splitting the two old faces was rather convoluted, but in
+essence involved creating the two new faces for each old face making use
+of the old halfedges and only adding new ones when necessary. The messy
+part was updating the twin edges for the split edge, since these edges
+were common to all of the new faces.
+<p>
+Note that, by necessity,  halfedges were updated as the algorithm proceeded.
+We did this because the added edges might still have been longer than the
+threshold, and processing these new edges meant that we needed the halfedges
+for them.
+<hr><br><h3><a name='crop'>Crop</a></h3><pre>meshpro input/cheetah.off output/writeup_Crop.off -crop 0 -1 1.5 %s</pre><table>
+<tr><td><a href = 'output/cheetah.jpg'> <img width=350 src='output/cheetah.jpg'></a></td>
+<td><a href = 'output/writeup_Crop1.jpg'> <img width=350 src='output/writeup_Crop1.jpg'></a></td>
+<td><a href = 'output/writeup_Crop0.jpg'> <img width=350 src='output/writeup_Crop0.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Cropped to positive side of plane 1.5<i>z</i> - <i>y</i> + 1 = 0</td>
+<td align='center'>Cropped to positive side of plane 1.5<i>z</i> - <i>y</i> + 0 = 0</td>
+</tr>
+</table><br>
+<table>
+<tr><td><a href = 'output/writeup_Crop2-1.jpg'> <img width=350 src='output/writeup_Crop2-1.jpg'></a></td>
+<td><a href = 'output/writeup_Crop2-2.jpg'> <img width=350 src='output/writeup_Crop2-2.jpg'></a></td>
+<td><a href = 'output/writeup_Crop2-4.jpg'> <img width=350 src='output/writeup_Crop2-4.jpg'></a></td>
+</tr>
+<tr><td align='center'>Cropped to positive side of plane 1.5<i>z</i> - <i>y</i> + -1 = 0</td>
+<td align='center'>Cropped to positive side of plane 1.5<i>z</i> - <i>y</i> + -2 = 0</td>
+<td align='center'>Cropped to positive side of plane 1.5<i>z</i> - <i>y</i> + -4 = 0</td>
+</tr>
+</table><br>
+Cropping was done by iterating through all the faces and determining if the
+face intersected the cropping plane. This was accomplished by first iterating
+through the vertices to determine whether each vertex was above or below the
+plane. A face intersected the plane if some of its vertices were above
+the plane and some were below. We determine the intersecting edge (the one
+with one endpoint above and one endpoint below the line) and find the
+intersection with the plane. This was the step that uncovered the bug with the
+<code>R3Plane</code> constructors. We do have to make sure to store the
+new vertex (using a map from Edge to vertex) so that we don't create each
+new vertex twice.
+<!--===========================================-->
+<!--<H3><A name='randomnoise'>Random Noise</A></H3>
+<PRE>meshpro input/meshname.off output/meshname_randomnoise_factor.off -noise factor</PRE>
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="input/meshname_randomnoise_0.0.jpg"><IMG width=200 src="output/meshname_randomnoise_0.0.jpg"></A><BR>
+       Input
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="input/meshname_randomnoise_0.1.jpg"><IMG width=200 src="output/meshname_randomnoise_0.1.jpg"></A><BR>
+       0.1
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/meshname_randomnoise_0.2.jpg"><IMG width=200 src="output/meshname_randomnoise_0.2.jpg"></A><BR>
+       0.2
+    </TD>
+    <TD vAlign=top align=middle>
+      <A href="output/meshname_randomnoise_0.4.jpg"><IMG width=200 src="output/meshname_randomnoise_0.4.jpg"></A><BR>
+      0.4
+    </TD>
+  </TR>
+  <TR>
+    <TD vAlign=top align=middle colspan="5">
+      Comments about implementation, interesting features, problems, etc.<BR>
+      A movie of randomnoise varying between xxx and xxx is linked <A href="movies/meshname_randomnoise_movie.avi">here</A>.
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>-->
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2><A name='art'>Art Contest Submission</A></H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0 vAlign=top align=middle>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+        <A href="art/beforeshot.jpg"><IMG width=512 src="art/beforeshot.jpg"></A><BR>
+        Before
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="art/dietshot.jpg"><IMG width=512 src="art/dietshot.jpg"></A><BR>
+       After
+    </TD>
+</TR>
+<TR>
+    <TD vAlign=top colspan=2>
+<A href="art/diet.avi">Cheetah on a diet:</A> This movie was made using my pinch transformation - I chose a point in the middle of
+the cheetah's belly, and animated the results of pinching it around that point from 0 to 3.6
+</TD>
+  </TR>
+</TBODY>
+</TABLE>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Bugs in supplied code</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+There were two bugs in the provided code that I found.
+<h3> Curvature bug </h3>
+In <code>meshview.cpp</code>, the following lines are found: <br>
+<pre>
+double magnitude = curvature * mesh->Radius();
+if (curvature < 0) glColor3d(magnitude, 0, 0);
+else glColor3d(0, 0, magnitude);
+</pre> <br>
+Obviously, this will not display correctly because we cannot have a negative
+value for the red component.
+<br>
+The fix is to simply add a negative sign:<br>
+<pre>
+if (curvature < 0) glColor3d(-magnitude, 0, 0);
+</pre><br>
+
+<h3> R3Plane initialization bug </h3>
+In <code>R3/R3Plane.cpp</code>, the R3Plane object has a normal vector. This
+vector should be normalized to a length of 1. However, this normalization
+is not performed in several constructors. This makes subsequent calls to
+<code>R3Plane::Point()</code> fail to return a point on the plane
+because this function assumes that the normal vector is normalized.
+<p>
+The fix is simply to add a call to <code>v.Normalize()</code> to any
+<code>R3Plane</code> constructors that do not already do so.
+
+<hr><br>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Feedback</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<DL>
+    <DT>How long did you spend on this assignment?</DT>
+  <DD>A very long time, more than 20 hours</DD>
+  <BR>&nbsp;<BR>
+
+  <DT>Was it too hard, too easy, or just right? </DT>
+  <DD> A lot of the features were very loosely specified. Although I enjoyed the
+  challenge of figuring out how to implement some of them, I thought others
+  were too vague so that I had no idea how to go about them efficiently
+  (especially the boolean operations, which would have required naively
+  looping over all pairs of faces). </DD>
+  <BR>&nbsp;<BR>
+
+  <DT>What was the best part of the assignment?
+  <DD> The satisfaction of having half of my code compile cleanly AND
+  work perfectly the first time after writing a complicated function. This happened
+  three times :) </DD>
+  <BR>&nbsp;<BR>
+
+  <DT>What was the worst part of the assignment? </DT>
+  <DD> Getting confused about Gaussian Curvature and having to read through
+  the terribly written, unhelpful paper that was supplied </DD>
+  <BR>&nbsp;<BR>
+
+  <DT>How could it be improved for next year? </DD>
+  <DD>Include some more suggestions for how to approach some of the more
+  difficult features, as well as some reference runtimes </DD>
+  <BR>&nbsp;<BR>
+
+</DL>
+<HR><BR>
+
+
+
+<!------------------------------------------------------------------------>
+
+</BODY>
+</HTML>

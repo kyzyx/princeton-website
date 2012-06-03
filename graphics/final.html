@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <title>
+            COS 426 Final Project
+        </title>
+    </head>
+    <body>
+        <h1>Spider Derby!</h1>
+        Edward Zhang, edwardz <br>
+        Wesley Verne, wverne <br>
+        Jorge Lugo, jlugo <br>
+        Eddy Ferreira, eferreir <br>
+
+        <p>
+        Spider Derby! is a first person time-trial game in which the player attempts
+        to reach a goal location as quickly as possible. The primary mechanic in this
+        game is the spiderweb slinging action - the player can shoot a web at a
+        building and swing on it like a rope.
+        </p>
+        <hr>
+        <h2> Gameplay </h2>
+	  <img src="screenshots/city_and_goal.png" />
+        <p>
+        The goal of <em>Spider Derby!</em> is to get from the start of the map to the goal as fast as possible. High scores are recorded and a timer is displayed so the player can hone their skills. Maps are large cities, and walking and climbing through them is slow and tedious, though it will get you to the goal. The fastest players will utilize the "rope" to swing through the cities at high speeds. Using first-person views, the player points the mouse at a building and clicks to shoot a rope. The rope attaches to the building at the point it hits and slightly contracts, giving the player some initial momentum to begin their swing. While in midair, the player can shoot more ropes to other buildings to keep swinging through to quickly get to the end. If players are careless and fall from too high, they will incur damage. Since the rope physics are realistic, swinging is a challenging but satisfying skill to master.
+        </p>
+        <hr>
+        <h2> Libraries </h2>
+        Spider Derby! requires the following libraries to run (in
+        addition to cos426 OpenGL and GLUT):
+        <ul>
+            <li> GLE </li>
+            <li> Freetype </li>
+            <li> OpenAL </li>
+            <li> ALUT </li>
+            <li> Bash </li> to run the level generator + clustering scripts
+            <li> Python </li> to actually generate and cluster buildings
+            <li> Linux </li> to use our Makefile
+            <li> <a href="http://oglft.sourceforge.net/">OGLFT</a></li>
+        </ul>
+        <h2> Installing </h2>
+        <p>
+            After installing the libraries, type:
+            <ul>
+                <li><code>cd src</code>
+                <li><code>make</code> to compile the core game.
+                <li><code>./generate.sh</code> to generate the levels. This script automatically generates the levels b2.scn, b5.scn, b20.scn, b50.scn, b100.scn, b250.scn, and b500.scn in ../levels/, with the number representing how many buildings the level has.
+                <li><code>./game [-cheats] level.scn</code> to play a level. Use the optional -cheats option to enable cheats such as "f" for flying mode and "i" for invincibility mode and "p" for sudden death.
+                <li>Example execution: <code>./game ../levels/b50.scn</code>
+            </ul>
+        </p>
+        <hr>
+        <h2> Implemented Features </h2>
+        <ul>
+            <li><a href="#basics">3D perspective viewing and objects</a></li>
+            <li><a href="#basics">Lighting and smooth shading</a></li>
+            <li><a href="#basics">User Input</a></li>
+            <li><a href="#basics">Computer Control</a></li>
+            <li><a href="#texture">Texture mapping</a></li>
+            <li><a href="#views">Multiple Views</a></li>
+            <li><a href="#hud">Onscreen Control Panel</a></li>
+            <li><a href="#frustrumculling">View Frustrum Culling</a></li>
+            <li><a href="#procedural">Procedural Modelling</a></li>
+            <li><a href="#collision">Collision Detection</a></li>
+            <li><a href="#dynamics">Simulated Dynamics</a></li>
+            <li><a href="#sound">Sound</a></li>
+        </ul>
+        <hr>
+        <h2><a name="basics">Basics</a></h2>
+        <p>
+        We used as our base the particleview code from Assignment 4. This provides the
+        framework for 3d perspective viewing, loading scene graphs, and lighting. It
+        also had the basic framework for our user input, both from keyboard and from
+        mouse.
+        </p>
+        <p>
+        Computer control of the scene is a physics simulation, both of the rope and
+        of the character physics (gravity, momentum, walking/climbing, etc.)
+        </p>
+        <hr>
+        <h2><a name="texture">Texture mapping</a></h2>
+	<img src="screenshots/lighting.png" />
+        <p>
+        The texture mapping is closely based off the functionality provided for our assignments. Materials are specified in the scene files (for the levels). Our file glut.cpp, which specifies the handlers we send to GLUT, loads the materials by calling LoadMaterials() in the main loop and then calls the Draw() methods for the respective shapes. Since we only draw a sphere (for the sky) and boxes (for the buildings and ground), we only had to ensure that the textures loaded up properly for these. We modified the Draw() functions to ensure that the bricks tiled properly on the buildings and the grass tiled properly on the floor by specifying the texture coordinates as integers. We added OpenGL's mipmapping functionality to reduce aliasing.
+        </p>
+        <hr>
+        <h2><a name="views">Multiple Views</a></h2>
+        <table><tr><td><img src="screenshots/minimap.png"></td><td>
+        We implemented an overhead "minimap" view, which is displayed in the lower
+        right corner. The character's position
+        is represented in the minimap with a red circle, and the goal (if onscreen) is
+        a green circle. If the goal is offscreen, an arrow is drawn pointing towards
+        the goal.
+        </td></tr></table>
+        <p>
+        The minimap is created by by rendering the scene from a point
+        above the character with an orthographic projection into a Frame Buffer Object.
+        This FBO is then rendered as a texture during the HUD drawing stage.
+        </p>
+        <hr>
+        <h2><a name="hud">Onscreen Control Panel</a></h2>
+          <br>
+          <img src="screenshots/health_bar.png" /> <br>
+          <img src="screenshots/minimap.png" />
+        <p>
+        The onscreen control panel contains several elements: the health bar, the
+        altimeter, the minimap, and the timer. The minimap is described above.
+        </p>
+        <p>
+        The HUD is rendered by using a simple orthographic projection and quads, lines,
+        and textures rendered on it.
+        </p>
+        <p>
+        We found that using GLUT's character rendering was extremely slow on our
+        systems, so we instead opted to use a combination of the Freetype library
+        and the open-source OGLFT (OpenGL FreeType) library for text rendering.
+        </p>
+        <hr>
+        <h2><a name="frustrumculling">View Frustrum Culling</a></h2>
+        <p>
+        View Frustrum Culling was implemented using a simple bounding plane check -
+        the view frustrum for a perspective projection consists of four planes (if
+        we ignore the near and far planes) as is the frustrum for an orthographic
+        projection. Therefore, we know we can cull any node whose bounding box lies
+        entirely one the negative side of one of these planes. This is a conservative
+        culling, as there exist boxes which do not intersect the frustrum while still
+        passing this plane test. However, in our game maps, this culling system will
+        successfully cull out effectively all of the nodes outside the view frustrum.
+        </p>
+        <p>
+        To make this culling efficient, we needed to generate a scene graph hierarchy
+        so that we could take advantage of bounding box culling to not visit some nodes.
+        To this end, we implemented a script that postprocesses the scenes generated
+        with generate_level.py and creates a binary tree structure with it. It performs
+        an inefficient O(<i>n</i><sup>3</sup>) hierarchical clustering algorithm, which just
+        groups the nodes together which have the smallest bounding box when unioned.
+        This performance is acceptable because scenes are generated only once, then
+        played many times.
+        </p>
+        <hr>
+        <h2><a name="procedural">Procedural Modelling</a></h2>
+        <p>
+            The maps are generated randomly using the python script generate_level.py, which takes one argument indicating how many buildings to create. If no argument isgiven, it generates a random number of buildings (though fewer than 1000). The script first chooses a random start and goal location and creates short buildings in those locations. From there, it creates a "path" made of rectangles from the start location to the end goal. The specified number of buildings are then generated in random locations: however, if they intersect with the start, goal, or path between them, it is discarded and a new building is generated. Self-intersecting buildings could be trivially avoided efficiently (by checking against the existing set of buildings and discarding), but they end up looking pretty cool so we left them in.
+        </p>
+        <hr>
+        <h2><a name="collision">Collision Detection</a></h2>
+        <p>
+	  <img src="screenshots/death.png" />
+<p>
+          Though the character is never actually drawn, it is considered a sphere for the sake of collision detection. We use the clustering of the buildings to quickly find which building we intersect before the camera goes through it.  Collision detecion is done by a simple intersection test.  If the character intersects a building, the program finds which surface of the building is closest to the player.  If it is a wall, the player is made to climb.  If it is a roof (the ground is considered to be one very wide building), the player is set to run.  If it is a floor, the player bounces off of the floor, losing all vertical momentum but maintaining horizontal momentum.
+          <br>
+	  <img src="screenshots/health_bar.png" />
+	  <p>
+	  When the character intersects a surface, the change in velocity is calculated.  Its magnitude is then used to calculate a damage amount, which is subtracted from the character's health.
+<p>
+	  <img src="screenshots/win.png" />
+<p>
+	  Intersection with the goal cylinder is done separately from the main intersection calculations.  Because the cylinder is effectively infinite, the character's x and z coordinates are compared with those of the cylinder's axis to calculate the distance.  When that distance is less than the radius of the cylinder AND the character is walking (no flying through the goal), the game is ended.
+        </p>
+    <p>Additionally, collisions between the rope and the scene must be detected. This is described in the section below.</p>
+        <hr>
+        <h2><a name="dynamics">Simulated Dynamics</a></h2>
+	  <img src="screenshots/swing2.png" />
+        <p>
+          We use simulated dynamics to control the movement of the character and of the rope as the player swings
+          in the air. The character has four states: walking, climbing, falling, and swinging. In the first two
+          states, the character's motion is constrained to a plane, and the character does not maintain momentum.
+          In the falling state, the motion is computed using Euler integration to realistically account
+          for momentum and gravity (much like in the particle assignment). The swinging state is the most complicated.
+          Like in the falling case, the character maintains momentum and is affected by gravity. But additionally,
+          the motion is constrained by the rope. This was implemented as a hard constraint. Because Euler integration
+          is not very numerically stable with hard constraints, we used Verlet integration for this instead. At each
+          time step, the character's unconstrained position is computed. Then, if that position causes the rope to
+          stretch beyond its maximum length, the character's position is adjusted in the direction of the tension
+          force to make the actual rope length exactly equal to the maximum rope length.
+        </p>
+        <p> 
+          Additionally the rope itself must be simulated. The rope has two states: unfixed, and fixed. At first, when
+          the character throws the rope, it is unfixed. The character remains in a falling state and the opposite end
+          of the rope moves like a particle except that its motion is constrained by the rope. As soon as the end
+          of the rope collides with something in the scene, it "sticks" and the rope becomes fixed. At that point, the
+          character goes into the swinging state. The end of the rope remains fixed, and the character's position is
+          constrained by the rope.
+        </p>
+        <p>
+          The rope is modeled as a sequence of straight lines between objects in the scene. That is, the rope is modeled
+          as if it is always taut. However, it has a maximum length, and when the rope's actual length is shorter than
+          its maximum length, it doesn't constrain the motion of its ends. Between each consecutive pair of straight
+          lines is a "rope kink" which lies along the edge of some box. As the ends of the rope move, the rope kinks
+          dynamically slide along the edges that they are on, so as to always minimize the total length of the rope. The
+          solution to this optimization problem is computed at each time step using gradient descent with Newton's method
+          for line search, falling back to golden section search if Newton's method fails to converge.
+        </p>
+        <p>
+          As the rope ends and the rope kinks move, new collisions with the scene must be detected. We make the
+          approximating assumption that each rope kink (and the ends) move in a straight line in between time steps.
+          Additionally, the rope only ever intersects with line segments (since we only allow boxes in our scene). So
+          the problem of detecting collisions is essentially the problem of detecting whether one line segment that turns
+          into another line segment by linear interpolation passes through a third line segment in the process. This
+          subproblem can be solved algebraically.
+        </p>
+        <p>
+          Finally, the simulation must detect when rope kinks need to be removed. This can happen in two ways: either
+          the rope kink slides off the edge of the rope, or the rope swings up off of the edge, so that the edge doesn't
+          push on the rope anymore. The first case is easy to detect, since the rope kink repositioning algorithm will
+          return a position that is off the end of the edge (and our linear movement assumption lets us compute the
+          exact time at which the kink moves off the edge). The second case can be detected by checking whether the
+          vector from the edge to the interior of the box is on the same side of the rope as the net tension force on
+          the rope kink. Finding the exact time that the rope swings off can be done with a bisection method on time.
+        </p>
+        <hr>
+        <h2><a name="sound">Sound</a></h2>
+        <p>
+            We use OpenAL and ALUT to create the sounds. We got some sounds from freesounds.org and generated the rest (jumping and shooting) using bfxr.net. The walking and "swooshing" sound (when swinging through the air) loop, while the rest simply occur once. All sounds are attached to the characters in our game, though it would easily support sounds from a distance play them at the appropriate volume and speaker orientation. The swooshing sound volume is scaled relative to the velocity of the character, so the faster you're swinging through the air, the louder the sound is.
+        </p>
+        <br>
+    </body>
+</html>

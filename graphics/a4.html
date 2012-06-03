@@ -1,0 +1,484 @@
+<HTML>
+<HEAD>
+<TITLE>
+COS 426 Assignment 4
+</TITLE>
+<BODY>
+<CENTER>
+<H2>
+COS 426, Spring 2012<BR>
+Edward Zhang, edwardz<BR>
+</H2>
+</CENTER>
+<HR><BR>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>List of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+I believe that I have implemented the following features, which are worth a total of
+7+16=23 points (I've also implemented an unlisted feature that I believe is equal in
+difficulty to one point):
+<ul>
+    <li><A href="#firststep"> First step: </A></li>
+<ul>
+    <li><b>(1) Euler integration</b></li>
+</ul>
+</ul>
+
+
+<ul>
+    <li><A href="#particlesources"> Particle sources: </A></li>
+<ul>
+    <li><b>(1) Sphere particle sources</b></li>
+    <li>(1) Circle particle sources</li>
+    <li>(1) Line particle sources </li>
+    <li>(2) Mesh particle sources</li>
+</ul>
+</ul>
+
+<!------------------------------------------------------------------------>
+
+<ul>
+    <li><A href="#particlesinks"> Particle sinks: </A></li>
+<ul>
+
+    <li><b>(1) Sphere particle sinks</b></li>
+    <li>(1) Box particle sinks</li>
+    <li>(1) Cylinder particle sinks</li>
+    <li>ADDITIONAL (0) Dynamic particle sinks</li>
+</ul>
+</ul>
+
+<!------------------------------------------------------------------------>
+
+<ul>
+    <li><A href="#simulation"> Particle simulation: </A></li>
+<ul>
+    <li>(1) Particle lifetimes</li>
+    <li>(1) Midpoint integration</li>
+</ul>
+</ul>
+
+<!------------------------------------------------------------------------>
+
+<ul>
+    <li><A href="#collisiondetection">Collision detection: </A></li>
+<ul>
+    <li><b>(2) Particle-scene collisions</b></li>
+</ul>
+</ul>
+
+<ul>
+    <li><A href="#particleinteraction">Particle interaction: </A></li>
+<ul>
+    <li><b>(2) Springs</b></li>
+    <li>(1) Particle attraction</li>
+</ul>
+</ul>
+
+<ul>
+    <li><A href="#particlerendering">Particle rendering: </A></li>
+<ul>
+
+    <li>(1) Trails</li>
+    <li>(1) Dynamic materials</li>
+    <li>(2) Animated materials</li>
+    <li>(2) Textured sprites</li>
+</ul>
+</ul>
+
+<ul>
+    <li> <A href="#artcontest">Art contest: </A></li>
+<ul>
+<li> (1) submit a movie </li>
+</ul>
+</ul>
+<HR><BR>
+<!--
+TODO: dynamic/animated materials, fix intersections, art, writeup
+-->
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Demonstration of Implemented Features</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<!------------------------------------------------------------------------>
+<H3><A name="firststep"> First step  </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/particlemotion.gif"><IMG  width=256 src="output/particlemotion.gif"></A><BR>
+       <A href="input/particlemotion.scn">particlemotion.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/gravity.gif"><IMG width=256  src="output/gravity.gif"></A><BR>
+       <A href="input/gravity.scn">gravity.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/dragrace.gif"><IMG width=256 src="output/dragrace.gif"></A><BR>
+       <A href="input/dragrace.scn">dragrace.scn</A>
+    </TD>
+</TR>
+</TBODY>
+</TABLE>
+
+<p>The animations in this write-up have been created as animated gif files, using a
+variation of the command
+<pre>
+ convert -delay 4 -loop 0 video-frames/frame*.jpg video.gif
+</pre>
+which is available on most Linux platforms and can be installed on the Mac OS X
+platform with the instructions found
+<A href="http://www.imagemagick.org/script/binary-releases.php#macosx">here</A>.
+If you cannnot create animated .gif files, you may alternatively submit an MPEG
+(or MPEG4) compressed video created with any software of your choice. In that
+case, please link it accordingly.</p>
+
+The particle system is simulated as described in the lecture slides. I refactor the code such that there is a separate
+function to calculate forces, to make the midpoint method easier to implement. This function is where the
+gravitational and drag forces are calculated.
+<p>
+The rendering for these were very inefficient - especially with gravity, for very low frame rates I saw
+the particles randomly reverse direction at a particular time, and for high frame rates the particles did
+not have much of an initial velocity. This likely has to do with the way the time step works; however
+it works fine when viewed interactively.
+
+<hr><br>
+
+<!------------------------------------------------------------------------>
+<H3><A name="particlesources"> Particle sources </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/spheresource.gif"><IMG width=256 src="output/spheresource.gif"></A><BR>
+       <A href="input/spheresource.scn">spheresource.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/circlesource.gif"><IMG width=256 src="output/circlesource.gif"></A><BR>
+       <A href="input/circlesource.scn">circlesource.scn</A>
+    </TD>
+  <TR>
+ </TR>
+    <TD vAlign=top align=middle>
+       <A href="output/linesource.gif"><IMG width=256 src="output/linesource.gif"></A><BR>
+       <A href="input/linesource.scn">linesource.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/meshsource.gif"><IMG width=256 src="output/meshsource.gif"></A><BR>
+       <A href="input/meshsource.scn">meshsource.scn</A>
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+
+<ul>
+    <li> Sphere sources were implemented using the algorithm described in the lecture slides. </li>
+    <li> Mesh sources were implemented as follows: We first calculate the ratio of the
+    area of each face as a proportion of the total surface area of the mesh.
+    Then, a random number is selected between 0 and 1 and the face with the
+    corresponding cumulative area count is selected for generation. Then, a random
+    point on the face (assumed to be triangular) is selected by taking a random point
+    in the parallelogram defined by two of the edges of the triangle (mapping it into
+    the triangle if it is in the "opposite side" of the parallelogram </li>
+    <li> Line sources were quite simple - just selecting a parametric value along
+    the segment to determine a point, and then a random angle for the normal around the
+    line</li>
+    <li>Circle sources were also simple, using the code from area light sources to
+    generate random points by rejection sampling in a circle. Note that the circle
+    only emits particles off of one side (the positive side) of the circle to match
+    the sample gifs (although it would arguably make as much sense to have it randomly
+    come off of both sides). </li>
+</ul>
+<hr><br>
+
+<!------------------------------------------------------------------------>
+<H3><A name="particlesinks"> Particle sinks </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/spheresink.gif"><IMG width=256 src="output/spheresink.gif"></A><BR>
+       <A href="input/spheresink.scn">spheresink.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/cylindersink.gif"><IMG width=256 src="output/cylindersink.gif"></A><BR>
+       <A href="input/cylindersink.scn">cylindersink.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/boxsink.gif"><IMG width=256 src="output/boxsink.gif"></A><BR>
+       <A href="input/boxsink.scn">boxsink.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/dynsink.gif"><IMG width=256 src="output/dynsink.gif"></A><BR>
+       <A href="input/dynsink.scn">dynsink.scn</A>
+    </TD>
+ </TR>
+</TBODY>
+</TABLE>
+
+Sinks had two distinct implementation parts: the difficult one was determining
+the closest point on the sink, whereas the calculation of intersections was just
+borrowed from the previous assignment intersection code. Note that we assume
+that no points are inside the sinks, in general.
+<ul>
+    <li>Sphere sinks were the easiest to implement, since the closest point on
+    a sphere goes through the center of the sphere</li>
+    <li>Box sinks were simple using the ClosestPoint method of R3Box</li>
+    <li>Cylinder sinks were fun to implement - it involves projecting the
+    point onto the xz plane (perpendicular to the cylinder axis) and
+    determining the closest point on the cylinder's disk projected onto this plane
+    (which might be in the disk, or on the line from the point to the disk center).
+    We then project this back into the plane of the point, and then determine whether
+    the end caps are closer than the sides of the cylinder.</li>
+    <li> Dynamic sinks were added that randomly modulated to full intensity and
+    back down to zero intensity. </li>
+</ul>
+<hr><br>
+
+<!------------------------------------------------------------------------>
+<H3><A name="simulation"> Particle simulation </A></H3>
+<!------------------------------------------------------------------------>
+
+
+<TABLE>
+<TBODY>
+ <TR>    <TD vAlign=top align=middle>
+       <A href="output/euler.gif"><IMG width=256 src="output/euler.gif"></A><BR>
+       <A href="input/rope.scn">rope.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/midpoint.gif"><IMG width=256 src="output/midpoint.gif"></A><BR>
+       <A href="input/rope.scn">rope.scn</A>
+    </TD>
+</TR>
+</TBODY>
+</TABLE>
+
+One place where small differences in simulation are very obvious is in spring systems.
+With a frame rate of 25 fps, we notice that the midpoint integration gives the smooth
+rope motion that we expect, whereas normal euler integration makes the particles in
+the rope oscillate wildly (and eventually explode offscreen).
+<p>
+Although the time difference was not obvious at this scale, especially because of the
+inconsistencies with video rendering, it is clear that the midpoint method is slower
+because it must most notably calculate all the forces on a particle twice per time step
+instead of once for euler integration.
+
+<HR><BR>
+
+<!------------------------------------------------------------------------>
+<H3><A name="collisiondetection"> Collision detection </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/collisiondetection.gif"><IMG width=256 src="output/collisiondetection.gif"></A><BR>
+       <A href="input/collisiondetection.scn">collisiondetection.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/elasticity.gif"><IMG width=256 src="output/elasticity.gif"></A><BR>
+       <A href="input/elasticity.scn">elasticity.scn</A>
+    </TD>
+</TR>
+</TBODY>
+</TABLE>
+
+Collision detection made use of the ray intersection code from assignment 3. I
+augmented the intersect.cpp file to have segment-scene intersection, which simply
+checked that the parametric value <i>t</i> returned by ray-scene intersection
+was within the segment's bounds. Then, calculating intersections became a matter
+of checking whether segment from the previous particle position to the currently
+calculated position intersected the scene; if it did, then we would adjust
+the velocity appropriately according to the elasticity,
+set the position to the point of intersection, and
+then recalculate all the time step information for the particle with the remaining
+time in the timestep (to take into account multiple collisions in a time step).
+<p>
+There was one subtlety involved, which was how to make particles with little
+elasticity "land on top" of objects in the scene. The solution was to add a component
+of normal force to the force calculation: if there was an intersection in the
+previous time step, then we add a force perpendicular to the surface intersected
+with magnitude such that the component parallel to the newly calculated force was
+equal and opposite.
+<p>
+We also notice that the springs are not taken to account when
+determining intersections with the scene, which makes the cloth-sphere intersection
+look slightly funny.
+
+<!------------------------------------------------------------------------>
+<H3><A name="particleinteraction"> Particle interaction </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/mutualparticleattraction.gif"><IMG width=256 src="output/mutualparticleattraction.gif"></A><BR>
+       <A href="input/mutualparticleattraction.scn">mutualparticleattraction.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/rope.gif"><IMG width=256 src="output/rope.gif"></A><BR>
+       <A href="input/rope.scn">rope.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/cloth.gif"><IMG width=256 src="output/cloth.gif"></A><BR>
+       <A href="input/cloth.scn">cloth.scn</A>
+    </TD>
+</TR>
+</TBODY>
+</TABLE>
+
+Mutual particle attraction is implemented naively, where for each particle we loop
+over all other particles and calculate the forces exerted on it. We could easily halve
+the time by keeping track of the forces calculated for each pair of points, but this
+is asymptotically still O(N<sup>2</sup>) <p>
+Springs are implemented as suggested in lecture slides, using Hooke's law with damping.
+<p>
+
+Note that due to simulation constraints, we keep particle attraction forces off unless explicitly compiled with it, since this is
+a large source of latency for large systems. Implementing an algorithm such as Barnes Hutt would make this more tractable.
+<HR><BR>
+
+<!------------------------------------------------------------------------>
+<H3><A name="particlerendering"> Particle rendering </A></H3>
+<!------------------------------------------------------------------------>
+
+<TABLE>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="output/trails.gif"><IMG width=256 src="output/trails.gif"></A><BR>
+       <A href="input/dragrace.scn">dragrace.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/animatedmaterials.gif"><IMG width=256 src="output/animatedmaterials.gif"></A><BR>
+       <A href="input/animatedmaterials.scn">animatedmaterials.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/dynamicvel.gif"><IMG width=256 src="output/dynamicvel.gif"></A><BR>
+       <A href="input/dynamicvel.scn">dynamicvel.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/dynamictime.gif"><IMG width=256 src="output/dynamictime.gif"></A><BR>
+       <A href="input/dynamictime.scn">dynamictime.scn</A>
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="output/sprites.gif"><IMG width=256 src="output/sprites.gif"></A><BR>
+       <A href="input/sprites.scn">sprites.scn</A>
+    </TD>
+</TR>
+</TBODY>
+</TABLE>
+<p> Trails were implemented by keeping a deque of previous particle positions for each
+particle and then rendering the points with decreasing alpha, using the GL_BLEND mode.
+</p>
+<p>Dynamic materials were fairly straightforward to implement: above, we see an example of scaling based on velocity and on time. For both
+of these, we simply define a second material and linearly interpolate between some specified maximum time or velocity and the current time or velocity. </p>
+<p> The simplest implementation of animated materials uses a circularly linked list of materials and a change duration. When the current material has been used for its
+change duration, then we assign the particle material to be the next material in the linked list. </p>
+<p> For both dynamic and animated materials, the scene graph specification syntax is identical to the material syntax, with a couple of extra fields:
+<hr>
+<br><b>dynamic</b><br>&nbsp;&nbsp;&nbsp;<b>mat_id type max</b><br>
+[<i>material fields</i>]<br><br>
+Interpolates material properties for the material specified by <b>mat_id</b>. If type
+is 1, then interpolates by lifetime; if type is 2 interpolates by velocity.
+<b>max</b> specifies the maximum time/velocity to use for interpolation (i.e. if
+time/velocity &gt; <b>max</b>, then the material used is entirely this new one,
+otherwise it is partially the material <b>mat_id</b>).
+<hr>
+<br><b>animate</b><br>&nbsp;&nbsp;&nbsp;<b>mat_id duration</b><br>
+[<i>material fields</i>]<br><br>
+Inserts the new material into the animation cycle after the material <b>mat_id</b>.
+Cycles to the next material after <b>duration</b> seconds.
+<hr>
+<p> Sprites had to be implemented in the particleview.cpp file because otherwise
+there was no simple way to get the camera coordinates and orientation. I modelled
+my OpenGL code on the R3Box texture mapping code - we load the material, and calculate
+the corners of a square centered on the point by using the camera's up and right vectors.  I also augment the material specification by requiring a size parameter to be
+included if a texture is specified - this size is the "radius" of the square used
+to render the sprite. I also had to fix the R2Image ReadBMP function to deal
+with 32 bit RGBA bitmaps. </p>
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2><A name='art'>Art Contest Submission</A></H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<TABLE cellSpacing=0 cellPadding=10 border=0 vAlign=top align=middle>
+<TBODY>
+  <TR>
+    <TD vAlign=top align=middle>
+       <A href="art/clothball.jpg"><IMG width=512 src="art/clothball.jpg"></A><BR>
+       <A href="art/clothball.avi">Movie</A><BR>
+       Cloth falling onto a ball, then falling off.
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="art/blooper.jpg"><IMG width=512 src="art/blooper.jpg"></A><BR>
+       What happens when you apply elasticity incorrectly
+    </TD>
+    <TD vAlign=top align=middle>
+       <A href="art/snow.jpg"><IMG width=512 src="art/snow.jpg"></A><BR>
+       <A href="art/snow.avi">Movie</A><BR>
+       Snow swirling around (not just falling straight down!)
+    </TD>
+  </TR>
+</TBODY>
+</TABLE>
+
+<HR><BR>
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<H2>Feedback</H2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<DL>
+  <DT>How long did you spend on this assignment?
+  <DD>A fairly long time, more than 10 hours
+  <BR>&nbsp;<BR>
+
+  <DT>Was it too hard, too easy, or just right?
+  <DD>A lot of the tasks turned out to be poorly specified or much
+  more difficult than they appeared to be.
+  <BR>&nbsp;<BR>
+
+  <DT>What was the best part of the assignment?
+  <DD>The freedom to implement and experiment with what looks best -
+  this assignment was a lot more intuitive in many ways than the previous
+  ones.
+  <BR>&nbsp;<BR>
+
+  <DT>What was the worst part of the assignment?
+  <DD>The fact that the tasks were poorly specified made it difficult to
+  decide what to do or how to do it.
+  <BR>&nbsp;<BR>
+
+  <DT>How could it be improved for next year?
+  <DD>A bit of help or clearer instructions for the more complicated tasks, e.g.
+  Boids, simulating multiple intersections per time step, etc.
+  <BR>&nbsp;<BR>
+</DL>
+<HR><BR>
+<!------------------------------------------------------------------------>
+
+</BODY>
+</HTML>

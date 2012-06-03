@@ -1,0 +1,532 @@
+<html>
+
+<head>
+ <title>
+  COS 426 Assignment 1
+ </title>
+</head>
+
+<body bgcolor="#ffffff">
+
+<br><hr><br>
+
+<center>
+<h2>
+COS 426, Spring 2012
+<br>
+Edward Zhang, edwardz           <!-- Fill in your name and login -->
+</h2>
+</center>
+
+<br><hr><br>
+
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<h2>Demonstration of Implemented Features</h2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+<h3>Brightness change</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Brightness0.5.jpg'> <img width=200 src='output/globos_Brightness0.5.jpg'></a></td>
+<td><a href = 'output/globos_Brightness1.jpg'> <img width=200 src='output/globos_Brightness1.jpg'></a></td>
+<td><a href = 'output/globos_Brightness1.5.jpg'> <img width=200 src='output/globos_Brightness1.5.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Brightness 50%</td>
+<td align='center'>Brightness 100%</td>
+<td align='center'>Brightness 150%</td>
+</tr>
+</table>
+<h3>Contrast change</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Contrast-1.jpg'> <img width=200 src='output/globos_Contrast-1.jpg'></a></td>
+<td><a href = 'output/globos_Contrast0.jpg'> <img width=200 src='output/globos_Contrast0.jpg'></a></td>
+<td><a href = 'output/globos_Contrast0.5.jpg'> <img width=200 src='output/globos_Contrast0.5.jpg'></a></td>
+<td><a href = 'output/globos_Contrast1.jpg'> <img width=200 src='output/globos_Contrast1.jpg'></a></td>
+<td><a href = 'output/globos_Contrast2.jpg'> <img width=200 src='output/globos_Contrast2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Contrast -100%</td>
+<td align='center'>Contrast 0%</td>
+<td align='center'>Contrast 50%</td>
+<td align='center'>Contrast 100%</td>
+<td align='center'>Contrast 200%</td>
+</tr>
+</table>
+<h3>Saturation change</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Saturation-1.jpg'> <img width=200 src='output/globos_Saturation-1.jpg'></a></td>
+<td><a href = 'output/globos_Saturation0.jpg'> <img width=200 src='output/globos_Saturation0.jpg'></a></td>
+<td><a href = 'output/globos_Saturation0.5.jpg'> <img width=200 src='output/globos_Saturation0.5.jpg'></a></td>
+<td><a href = 'output/globos_Saturation1.jpg'> <img width=200 src='output/globos_Saturation1.jpg'></a></td>
+<td><a href = 'output/globos_Saturation2.jpg'> <img width=200 src='output/globos_Saturation2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Saturation -100%</td>
+<td align='center'>Saturation 0%</td>
+<td align='center'>Saturation 50%</td>
+<td align='center'>Saturation 100%</td>
+<td align='center'>Saturation 200%</td>
+</tr>
+</table>
+<h3>Gamma change</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Gamma0.455.jpg'> <img width=200 src='output/globos_Gamma0.455.jpg'></a></td>
+<td><a href = 'output/globos_Gamma1.jpg'> <img width=200 src='output/globos_Gamma1.jpg'></a></td>
+<td><a href = 'output/globos_Gamma2.2.jpg'> <img width=200 src='output/globos_Gamma2.2.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Gamma 0.455</td>
+<td align='center'>Gamma 1</td>
+<td align='center'>Gamma 2.2</td>
+</tr>
+</table>
+<h3>Black and White</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Black.jpg'> <img width=200 src='output/globos_Black.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Black and White</td>
+</tr>
+</table>
+<h3>Gaussian Blur</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Gaussian1.jpg'> <img width=200 src='output/globos_Gaussian1.jpg'></a></td>
+<td><a href = 'output/globos_Gaussian2.jpg'> <img width=200 src='output/globos_Gaussian2.jpg'></a></td>
+<td><a href = 'output/globos_Gaussian4.jpg'> <img width=200 src='output/globos_Gaussian4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Gaussian Blur &sigma; = 1</td>
+<td align='center'>Gaussian Blur &sigma; = 2</td>
+<td align='center'>Gaussian Blur &sigma; = 4</td>
+</tr>
+</table>
+<h3>Edge Detection</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Edge.jpg'> <img width=200 src='output/globos_Edge.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Edge Detection</td>
+</tr>
+</table>
+<h3>Sharpen</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Sharpen.jpg'> <img width=200 src='output/globos_Sharpen.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Sharpen</td>
+</tr>
+</table>
+<h3>Median Filter</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Median1.jpg'> <img width=200 src='output/globos_Median1.jpg'></a></td>
+<td><a href = 'output/globos_Median2.jpg'> <img width=200 src='output/globos_Median2.jpg'></a></td>
+<td><a href = 'output/globos_Median4.jpg'> <img width=200 src='output/globos_Median4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Median Filter with width 1</td>
+<td align='center'>Median Filter with width 2</td>
+<td align='center'>Median Filter with width 4</td>
+</tr>
+</table>
+<h3>Rotate</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Rotate.7.jpg'> <img width=200 src='output/globos_Rotate.7.jpg'></a></td>
+<td><a href = 'output/globos_Rotate2.2.jpg'> <img width=200 src='output/globos_Rotate2.2.jpg'></a></td>
+<td><a href = 'output/globos_Rotate3.9.jpg'> <img width=200 src='output/globos_Rotate3.9.jpg'></a></td>
+<td><a href = 'output/globos_Rotate5.6.jpg'> <img width=200 src='output/globos_Rotate5.6.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Rotation by .7 radians</td>
+<td align='center'>Rotation by 2.2 radians</td>
+<td align='center'>Rotation by 3.9 radians</td>
+<td align='center'>Rotation by 5.6 radians</td>
+</tr>
+</table>
+<h3>Motion blur</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Motion10.jpg'> <img width=200 src='output/globos_Motion10.jpg'></a></td>
+<td><a href = 'output/globos_Motion20.jpg'> <img width=200 src='output/globos_Motion20.jpg'></a></td>
+<td><a href = 'output/globos_Motion30.jpg'> <img width=200 src='output/globos_Motion30.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Horizontal Motion Blur with width 10</td>
+<td align='center'>Horizontal Motion Blur with width 20</td>
+<td align='center'>Horizontal Motion Blur with width 30</td>
+</tr>
+</table>
+<h3>Quantization</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Quantization1.jpg'> <img width=200 src='output/globos_Quantization1.jpg'></a></td>
+<td><a href = 'output/globos_Quantization2.jpg'> <img width=200 src='output/globos_Quantization2.jpg'></a></td>
+<td><a href = 'output/globos_Quantization3.jpg'> <img width=200 src='output/globos_Quantization3.jpg'></a></td>
+<td><a href = 'output/globos_Quantization4.jpg'> <img width=200 src='output/globos_Quantization4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Quantized to 1 bits</td>
+<td align='center'>Quantized to 2 bits</td>
+<td align='center'>Quantized to 3 bits</td>
+<td align='center'>Quantized to 4 bits</td>
+</tr>
+</table>
+<h3>Random Dither</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Random1.jpg'> <img width=200 src='output/globos_Random1.jpg'></a></td>
+<td><a href = 'output/globos_Random2.jpg'> <img width=200 src='output/globos_Random2.jpg'></a></td>
+<td><a href = 'output/globos_Random3.jpg'> <img width=200 src='output/globos_Random3.jpg'></a></td>
+<td><a href = 'output/globos_Random4.jpg'> <img width=200 src='output/globos_Random4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Random dither to 1 bits</td>
+<td align='center'>Random dither to 2 bits</td>
+<td align='center'>Random dither to 3 bits</td>
+<td align='center'>Random dither to 4 bits</td>
+</tr>
+</table>
+<h3>Ordered Dither</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Ordered1.jpg'> <img width=200 src='output/globos_Ordered1.jpg'></a></td>
+<td><a href = 'output/globos_Ordered2.jpg'> <img width=200 src='output/globos_Ordered2.jpg'></a></td>
+<td><a href = 'output/globos_Ordered3.jpg'> <img width=200 src='output/globos_Ordered3.jpg'></a></td>
+<td><a href = 'output/globos_Ordered4.jpg'> <img width=200 src='output/globos_Ordered4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Ordered dither to 1 bits</td>
+<td align='center'>Ordered dither to 2 bits</td>
+<td align='center'>Ordered dither to 3 bits</td>
+<td align='center'>Ordered dither to 4 bits</td>
+</tr>
+</table>
+<h3>Floyd-Steinberg Dither</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Floyd-Steinberg1.jpg'> <img width=200 src='output/globos_Floyd-Steinberg1.jpg'></a></td>
+<td><a href = 'output/globos_Floyd-Steinberg2.jpg'> <img width=200 src='output/globos_Floyd-Steinberg2.jpg'></a></td>
+<td><a href = 'output/globos_Floyd-Steinberg3.jpg'> <img width=200 src='output/globos_Floyd-Steinberg3.jpg'></a></td>
+<td><a href = 'output/globos_Floyd-Steinberg4.jpg'> <img width=200 src='output/globos_Floyd-Steinberg4.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Floyd-Steinberg Dither to 1 bits</td>
+<td align='center'>Floyd-Steinberg Dither to 2 bits</td>
+<td align='center'>Floyd-Steinberg Dither to 3 bits</td>
+<td align='center'>Floyd-Steinberg Dither to 4 bits</td>
+</tr>
+</table>
+<h3>Bilateral filtering</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral20.jpg'> <img width=200 src='output/globos_Bilateral20.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral30.jpg'> <img width=200 src='output/globos_Bilateral30.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral40.jpg'> <img width=200 src='output/globos_Bilateral40.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Bilateral filter with &sigma;<sub>d</sub> 1 and &sigma;<sub>r</sub> 20</td>
+<td align='center'>Bilateral filter with &sigma;<sub>d</sub> 1 and &sigma;<sub>r</sub> 30</td>
+<td align='center'>Bilateral filter with &sigma;<sub>d</sub> 1 and &sigma;<sub>r</sub> 40</td>
+</tr>
+</table>
+<table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral220.jpg'> <img width=200 src='output/globos_Bilateral220.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral230.jpg'> <img width=200 src='output/globos_Bilateral230.jpg'></a></td>
+<td><a href = 'output/globos_Bilateral240.jpg'> <img width=200 src='output/globos_Bilateral240.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Bilateral filter with &sigma;<sub>d</sub> 3 and &sigma;<sub>r</sub> 20</td>
+<td align='center'>Bilateral filter with &sigma;<sub>d</sub> 3 and &sigma;<sub>r</sub> 30</td>
+<td align='center'>Bilateral filter with &sigma;<sub>d</sub> 3 and &sigma;<sub>r</sub> 40</td>
+</tr>
+</table>
+<h3>Extract Channel</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Extractred.jpg'> <img width=200 src='output/globos_Extractred.jpg'></a></td>
+<td><a href = 'output/globos_Extractgreen.jpg'> <img width=200 src='output/globos_Extractgreen.jpg'></a></td>
+<td><a href = 'output/globos_Extractblue.jpg'> <img width=200 src='output/globos_Extractblue.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Extract red channel</td>
+<td align='center'>Extract green channel</td>
+<td align='center'>Extract blue channel</td>
+</tr>
+</table>
+<h3>Dab - Painterly effect</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Dab0.2.jpg'> <img width=200 src='output/globos_Dab0.2.jpg'></a></td>
+<td><a href = 'output/globos_Dab0.4.jpg'> <img width=200 src='output/globos_Dab0.4.jpg'></a></td>
+<td><a href = 'output/globos_Dab0.6.jpg'> <img width=200 src='output/globos_Dab0.6.jpg'></a></td>
+<td><a href = 'output/globos_Dab0.8.jpg'> <img width=200 src='output/globos_Dab0.8.jpg'></a></td>
+<td><a href = 'output/globos_Dab1.jpg'> <img width=200 src='output/globos_Dab1.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Dab with a resolution of 0.2</td>
+<td align='center'>Dab with a resolution of 0.4</td>
+<td align='center'>Dab with a resolution of 0.6</td>
+<td align='center'>Dab with a resolution of 0.8</td>
+<td align='center'>Dab with a resolution of 1</td>
+</tr>
+</table>
+<h3>Mosaic - Painterly effect</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Mosaic.33.jpg'> <img width=200 src='output/globos_Mosaic.33.jpg'></a></td>
+<td><a href = 'output/globos_Mosaic.67.jpg'> <img width=200 src='output/globos_Mosaic.67.jpg'></a></td>
+<td><a href = 'output/globos_Mosaic1.jpg'> <img width=200 src='output/globos_Mosaic1.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Mosaic with a resolution of .33</td>
+<td align='center'>Mosaic with a resolution of .67</td>
+<td align='center'>Mosaic with a resolution of 1</td>
+</tr>
+</table>
+<h3>Fun - Fisheye filter</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Fun25.jpg'> <img width=200 src='output/globos_Fun25.jpg'></a></td>
+<td><a href = 'output/globos_Fun50.jpg'> <img width=200 src='output/globos_Fun50.jpg'></a></td>
+<td><a href = 'output/globos_Fun75.jpg'> <img width=200 src='output/globos_Fun75.jpg'></a></td>
+<td><a href = 'output/globos_Fun100.jpg'> <img width=200 src='output/globos_Fun100.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Fisheye filter with a radius of 25</td>
+<td align='center'>Fisheye filter with a radius of 50</td>
+<td align='center'>Fisheye filter with a radius of 75</td>
+<td align='center'>Fisheye filter with a radius of 100</td>
+</tr>
+</table>
+<table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Fun2100.jpg'> <img width=200 src='output/globos_Fun2100.jpg'></a></td>
+<td><a href = 'output/globos_Fun2200.jpg'> <img width=200 src='output/globos_Fun2200.jpg'></a></td>
+<td><a href = 'output/globos_Fun2300.jpg'> <img width=200 src='output/globos_Fun2300.jpg'></a></td>
+<td><a href = 'output/globos_Fun2400.jpg'> <img width=200 src='output/globos_Fun2400.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Fisheye filter with a radius of 100 centered at x = 100</td>
+<td align='center'>Fisheye filter with a radius of 100 centered at x = 200</td>
+<td align='center'>Fisheye filter with a radius of 100 centered at x = 300</td>
+<td align='center'>Fisheye filter with a radius of 100 centered at x = 400</td>
+</tr>
+</table>
+<h3>Crop</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Crop.jpg'> <img width=200 src='output/globos_Crop.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Cropped section of Mosaic image</td>
+</tr>
+</table>
+<h3>Scaling</h3><table>
+<tr><td><a href = 'input/globos_de_colores.jpg'> <img width=200 src='input/globos_de_colores.jpg'></a></td>
+<td><a href = 'output/globos_Scalingpoint.jpg'> <img width=200 src='output/globos_Scalingpoint.jpg'></a></td>
+<td><a href = 'output/globos_Scalingbilinear.jpg'> <img width=200 src='output/globos_Scalingbilinear.jpg'></a></td>
+<td><a href = 'output/globos_Scalinggaussian.jpg'> <img width=200 src='output/globos_Scalinggaussian.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Scaled to triple the size using sampling type point</td>
+<td align='center'>Scaled to triple the size using sampling type bilinear</td>
+<td align='center'>Scaled to triple the size using sampling type gaussian</td>
+</tr>
+</table>
+<h3>Morph</h3><table>
+<tr><td><a href = 'input/fishA.jpg'> <img width=200 src='input/fishA.jpg'></a></td>
+<td><a href = 'output/globos_Morph0.1.jpg'> <img width=200 src='output/globos_Morph0.1.jpg'></a></td>
+<td><a href = 'output/globos_Morph0.2.jpg'> <img width=200 src='output/globos_Morph0.2.jpg'></a></td>
+<td><a href = 'output/globos_Morph0.3.jpg'> <img width=200 src='output/globos_Morph0.3.jpg'></a></td>
+<td><a href = 'output/globos_Morph0.4.jpg'> <img width=200 src='output/globos_Morph0.4.jpg'></a></td>
+<td><a href = 'output/globos_Morph0.5.jpg'> <img width=200 src='output/globos_Morph0.5.jpg'></a></td>
+</tr>
+<tr><td align='center'> Input </td><td align='center'>Morph at time t = 0.1</td>
+<td align='center'>Morph at time t = 0.2</td>
+<td align='center'>Morph at time t = 0.3</td>
+<td align='center'>Morph at time t = 0.4</td>
+<td align='center'>Morph at time t = 0.5</td>
+</tr>
+</table>
+<table>
+<tr><td><a href = 'output/globos_Morph20.6.jpg'> <img width=200 src='output/globos_Morph20.6.jpg'></a></td>
+<td><a href = 'output/globos_Morph20.7.jpg'> <img width=200 src='output/globos_Morph20.7.jpg'></a></td>
+<td><a href = 'output/globos_Morph20.8.jpg'> <img width=200 src='output/globos_Morph20.8.jpg'></a></td>
+<td><a href = 'output/globos_Morph20.9.jpg'> <img width=200 src='output/globos_Morph20.9.jpg'></a></td>
+<td><a href = 'output/globos_Morph21.jpg'> <img width=200 src='output/globos_Morph21.jpg'></a></td>
+</tr>
+<tr><td align='center'>Morph at time t = 0.6</td>
+<td align='center'>Morph at time t = 0.7</td>
+<td align='center'>Morph at time t = 0.8</td>
+<td align='center'>Morph at time t = 0.9</td>
+<td align='center'>Morph at time t = 1</td>
+</tr>
+</table>
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+<h3>Composite</h3><table>
+<td><a href = 'output/mosaic_alpha.bmp'> <img width=200 src='output/mosaic_alpha.bmp'></a></td>
+<td><a href = 'output/mosaic_dab.bmp'> <img width=200 src='output/mosaic_dab.bmp'></a></td>
+<td><a href = 'output/mosaic.bmp'> <img width=200 src='output/mosaic.bmp'></a></td>
+</tr>
+<tr><td align='center'> Edge mask (to be applied with OVER) </td><td align='center'> Original dab image</td>
+<td align='center'>Composite mosaic image</td>
+</tr>
+</table>
+
+<br><hr></br>
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<h2>Implementation Notes</h2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<h3>Point Operations</h3>
+Many of these filters make use of a generic <tt>Interpolate()</tt> function
+that I wrote, which takes a coefficient and either an <tt>R2Image</tt> or <tt>R2Pixel</tt>;
+it uses the interpolation equation for each pixel in the image.
+<table border=1>
+    <tr><td><h4>Brightness change</h4></td><td>
+        Changing brightness simply involves interpolating with a black pixel by the factor, as suggested in the samples page. </td></tr>
+<tr><td><h4>Contrast change</h4></td><td>
+        Changes contrast by interpolating with a constant gray pixel with the average luminance of the image, as suggested in the samples page. Negative factors generate inverted images </td></tr>
+<tr><td><h4>Saturation change</h4></td><td>
+        Changing saturation involves interpolating with a gray level version of the image, from the <tt>BlackAndWhite</tt> function. Negative factors invert the hue. </td></tr>
+<tr><td><h4>Gamma change</h4></td><td>
+        Changing gamma simply raises each component of each pixel to the given exponent. </td></tr>
+<tr><td><h4>Black and White</h4></td><td>
+        Black and white replaces each pixel with its luminance, in each channel. </td></tr>
+<tr><td><h4>Extract Channel</h4></td><td>
+        Sets nonselected channels to 0 </td></tr>
+</table>
+
+<h3>Linear Filters</h3>
+I implemented a generic <tt>Filter</tt> class and <tt>LinearFilter</tt> function that applies a <tt>Filter</tt> to the image. The linear filter handles edges by "reflecting" across the edge (rather than renormalizing).
+<table border=1>
+    <tr><td><h4>Gaussian Blur</h4></td><td>
+        Gaussian blur is implemented by first generating a Gaussian filter kernel of width 3*<tt>sigma</tt>, then using the <tt>LinearFilter</tt> function. <p> The more efficient method of using a horizontal pass and vertical pass was considered, but ultimately the simplicity of using existing functions won out. </td></tr>
+<tr><td><h4>Edge Detection</h4></td><td>
+We implemented two edge detection kernels: One was the suggested kernel:
+<table>
+    <tr>
+        <td> -1 </td><td> -1 </td><td> -1 </td>
+    </tr>
+    <tr>
+        <td> -1 </td><td> 8 </td><td> -1 </td>
+    </tr>
+    <tr>
+        <td> -1 </td><td> -1 </td><td> -1 </td>
+    </tr>
+</table>
+
+For comparison, we also implemented the Sobel operator as suggested in <a href='http://en.wikipedia.org/wiki/Sobel_operator'>Wikipedia</a>, which applies
+the kernel
+<table>
+    <tr>
+        <td> -1 </td><td> 0 </td><td> 1 </td>
+    </tr>
+    <tr>
+        <td> -2 </td><td> 0 </td><td> 2 </td>
+    </tr>
+    <tr>
+        <td> -1 </td><td> 0 </td><td> 1 </td>
+    </tr>
+</table>
+horizontally and the analagous one vertically, and then takes the Euclidean distance between the two resulting images. </td></tr>
+<tr><td><h4>Sharpen</h4></td><td>
+Sharpening simply sums the original image with the edge-detected version. The effective filter is
+<table>
+    <tr>
+        <td> -1 </td><td> -1 </td><td> -1 </td>
+    </tr>
+    <tr>
+        <td> -1 </td><td> 9 </td><td> -1 </td>
+    </tr>
+    <tr>
+        <td> -1 </td><td> -1 </td><td> -1 </td>
+    </tr>
+</table> </td></tr>
+<tr><td><h4> Motion blur</h4> </td><td>
+        Motion blur is simply a linear filter with no vertical component. I used the kernel that was 0 on the left half and linearly increasing on the right side. </td></tr>
+</table>
+
+<h3>Nonlinear Filtering</h3>
+<h4>Median Filter</h4>
+The median filter is implemented relatively naively. For each pixel, we take the neighbors within
+the square of side length 2*<tt>width</tt> centered at the pixel, recopy the individual pixel values into a linear array, then calculate the median by using the quickselect algorithm based on COS226 materials. <p>
+Several implementation changes could be made. One possibility is to take points within a given radius, rather than a square window. Another is to make the neighbor finding more efficient, by replacing 2*<tt>width</tt> pixels every time we move one pixel over (since most of the neighbors remain the same). This would involve zig-zagging across the image.
+<h4>Bilateral Filter</h4>
+The bilateral filter is implemented as suggested <a href='http://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/MANDUCHI1/Bilateral_Filtering.html'>here</a>. For each pixel, we sum across its neighbors the product of the neighbor value with its domain distance and range distance. The domain distance is identical to the Gaussian Blur kernel. The range distance is implemented as Euclidean distance across CIELAB space. To avoid expensive recomputation, we store each pixel's CIELAB representation before filtering. The CIELAB formulae are taken from <a href = 'http://en.wikipedia.org/wiki/Lab_color_space'>Wikipedia</a>, with the white point obtained from <a href='http://www.mathworks.com/matlabcentral/fileexchange/24009'>this matlab script</a>.
+
+<h3>Resampling Operations</h3>
+<h4>Scale</h4>
+Scaling uses the pseudocode from the lecture slides. We simply scale the coordinates by the appropriate amount to get the reverse mapping. Scaling up works best with bilinear sampling, whereas minifying works better with gaussian sampling. We let the user select the method, so it is possible to scale up with a Gaussian sample.
+<h4>Rotate</h4>
+Rotation is slightly more complicated; implementing the pseudocode from lecture slides rotates around the origin, but we still need to translate the rotated image into the first quadrant and find a bounding box. <p>
+The bounding box dimensions are very straightforward using trigonometry. The translation
+is less straightforward since the amount of translation will change based on which quadrant the angle is in. I simply broke it down into the four cases and derived the appropriate equations by hand.
+<h4> Fun: Fisheye </h4>
+I implemented a mild fisheye effect for my resampling filter. This takes a circle of a given center and radius, and warps the image within this circle. The warping is done radially from the center - i.e. for each pixel in the output image, we take a vector from the circle center to the pixel and rescale it. The rescaling is determined based on the original length of the vector.
+<table><tr><td>
+The precise rescaling factors are subject to artistic judgment. We want some function <i>f</i>(L) where L is the length of the vector in the output image, and <i>f</i>(L) is the length of the vector in the original image that we will resample around. We want <i>f</i> to have the following properties:
+<ul>
+    <li> <i>f</i>(L) = L for L &gt; <i>r</i>, so it is piecewise around <i>r</i>; this means that we must choose a function for 0 &lt; L &lt; <i>r</i> that has <i>f</i>(<i>r</i>) = <i>r</i>
+    <li> <i>f</i>(0) = 0 (i.e. the center is still the center)
+    <li> <i>f'</i>(L) &gt; 0 (always increasing so that we don't lose or double parts of the image) below <i>r</i>
+</ul>
+For this, we chose a quadratic term, e.g. f(L) = L<sup>2</sup>/r satisfies the properties above. </td><td>
+<a href = 'output/curve.png'><img width=400 src='output/curve.png'></a></td></tr></table>
+
+<h3>Dithering Operations</h3>
+<table border=1>
+<tr><td><h4>Quantization</h4></td><td>
+This algorithm calculates the size of a quanta and quantizes each value by multiplying by the integer quotient of the original value and the quantum size. This is an important step in the other
+dither operations. </td></tr>
+<tr><td><h4>Random Dither</h4></td><td>
+        Random dither involves adding random noise to each pixel that is no more than half the quantum size - so the noise cannot change the quantized pixel value by more than one quantum. </td></tr>
+<tr><td><h4>Ordered Dither</h4></td><td>
+        This is almost exactly the same as random dither, except that the "random" noise is predetermined based on the Bayer matrix. </td></tr>
+<tr><td><h4>Floyd-Steinberg Dither</h4></td><td>
+        This implementation of Floyd-Steinberg dither goes from lower left to upper right using the error diffusion matrix given in the lecture slides. We quantize the pixel and take the difference between the original value and this quantized value, and spread that error out to the neighboring pixels. </td></tr>
+</table>
+
+<h3>Other</h3>
+Interpolation, Addition and Subtraction functions were implemented for convenience. <p> All of these functions
+will return an error if the images are not the same size.
+<h4>Crop</h4>
+This is a simple function that just recopies the pixels of interest into a new pixel array. There
+is bounds checking to make sure that the arguments remain inside the image.
+<h4>Composite</h4>
+This implements the generic composite operations with the equation coefficients given in the lecture slides.
+<h4>Morph</h4>
+This implements the technique as described in the Beier-Neely paper. We first compute an array of the intermediate segments, by interpolating between the endpoints of corresponding lines. We could also use the median - direction interpolation, but this was described as producing "less intuitive" results in the paper.
+
+After computing intermediate line segments, the morph is performed for each image, resampling based on the lines following the pseudocode in the paper. We precompute several quantities to avoid expensive computation of square roots and powers within the inner loop. The parameters used were <i>a</i> = 0.2,<i>b</i> = 1 (for simplicity, since this avoids the need to compute a power inside the loop), and <i>p</i> = 0.5.
+<h4>Painterly Filter: Dab/Mosaic</h4>
+I implemented a "paint dab" effect, which basically breaks the image down into discrete regions with a uniform color. My original idea was to generate a bunch of random points and color each pixel based on its nearest neighbor in this set. This would involve either computing the Voronoi diagram or storing the points in a kd-tree for nearest neighbor search. However, these were both rather complicated algorithms, and completely random points could clump together easily. I designed a simpler one that was more efficient and solved the problem. It involved three steps:
+<ol>
+    <li> First, we generate points at regular intervals (according to the provided "resolution") and perturb them by no more than half the interval size in the horizontal and vertical directions. <p>
+<a href = 'output/mosaic_points.bmp'><img width=300 src='output/mosaic_points.bmp'></a>
+<p>
+    This produces suitably random dab points that are relatively evenly distributed.
+    </li>
+    <li> Next, for each output pixel, we can find the bounding box within the unperturbed points; since the perturbation cannot move a pixel outside of its bounding box (because we only perturbed it by at most half of the side length) the nearest neighbor must be one of the nearby pixels. This makes the nearest neighbor search constant time, instead of logarithmic as a kd-tree would give.
+    <p> We keep track of the average pixel color for each of the dab points.
+    </li>
+    <li>
+    We then reiterate through the image and replace each pixel with the average pixel color of its nearest dab point neighbor. </li>
+    </li>
+</ol>
+The resolution argument is hand tuned, and is designed to work with inputs between 0.0 and 1.0. At 0.0, there is one "dab" for the entire image; higher resolutions give more dabs - but we cannot have more dabs than the original resolution, which is why we limit the resolution (to a minimum of 6 pixel intervals between points).
+<p>
+The mosaic uses the results of the dab filter. It basically adds a black border to each dab by
+running an edge detection filter on a grayscale version of the dabbed image. We then process the results by setting the alpha channel of all the black pixels (i.e. interior of dabs) to 0 and setting all the non-black pixels to black. This set of edges is then composited with the dabbed image using the OVER operator.
+<table><tr><td>
+Note that the results of this are not perfect - the black edges are inconsistent in width and do not always go around the entire dab. This could be perhaps be rectified by careful blurring or by detecting these gaps, but the results as they are are still very good.
+</td><td><a href = 'output/globos_Crop.jpg'><img width=200 src='output/globos_Crop.jpg'></a></td></tr></table>
+<br><hr></br>
+
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+<h2>Feedback</h2>
+<!------------------------------------------------------------------------>
+<!------------------------------------------------------------------------>
+
+<dl>
+  <dt>How long did you spend on this assignment?
+  <dd> A very long time.
+
+  <dt>Was it too hard, too easy, or just right?
+  <dd> The nature of this project, with many independent
+  components, made it feel manageable. Some features were
+  easy, some were very difficult.
+
+  <dt>What was the best part of the assignment?
+  <dd> I really enjoyed implementing my own filter, the dab/mosaic.
+  It was a lot of fun figuring out what I needed to do to make it work
+
+  <dt>What was the worst part of the assignment?
+  <dd> I think that, although the morph was a very cool algorithm, it
+  required too much overhead and was difficult to test. It would have been
+  very nice to have been provided a set of test images and test segments.
+
+  <dt>How could it be improved for next year?
+  <dd> I feel like there were too many short functions and not enough
+  difficult ones. This makes the writeup long and tedious, and the easy/short
+  functions don't really help us much. It would be better to have fewer features
+  worth more points each.
+
+</dl>
+
+<br><hr><br>
+
+</body>
+</html>
