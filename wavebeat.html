@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <title>
+            Edward Zhang '13 - Princeton Computer Science
+        </title>
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+    </head>
+    <body>
+    <div id='navbarcontainer'>
+        <ul id='navbar'>
+            <li class='navitem'><a class='nav' href='index.html'>Home</a></li>
+            <li class='navitem'><a class='nav' href='courses.html'>Coursework</a></li>
+            <li class='navitem'><a class='nav' href='projects.html'>Projects</a></li>
+            <li class='navitem'><a class='nav' href='music.html'>Music</a></li>
+            <li class='navitem'><a class='nav' href='resume.html'>Resume</a></li>
+        </ul>
+    </div>
+    <div id='content'>
+        <h2>WaveBeat: A Conducting System for User-Focused Gesture Recognition</h2>
+        Advisor: Rebecca Fiebrink<br><br>
+
+        <b> TL;DR </b><br> WaveBeat is a conducting system. You define a set of conducting
+        gestures, and then WaveBeat will play back a piece of music, following your tempo and
+        your chosen gestures in real time.
+        <hr>
+
+        <table><tr><td>
+        <h3> Abstract </h3>
+        Many conductor following systems have been designed in the past that use gesture
+        recognition and learning algorithms to great effect. Most such systems, however, are based on
+        specialized models and are designed and configured by experts in these fields. Being able to
+        generalize the use of such gesture recognition and learning algorithms would allow more people
+        to harness the power of these fields and use them in a diverse set of applications. To investigate
+        the nature of such user-focused generalization, we present the WaveBeat system, a conducting
+        system that uses independent, non-specific modules to implement real-time gesture recognition.
+        This system can follow both standard conducting patterns as well as user-defined patterns, and
+        allows users to configure relevant parameters to suit the algorithms to their needs.
+        The user-centric design of WaveBeat demonstrates that, although performance is affected by the
+        loss of specificity, it is possible to create functional systems around generalized gesture
+        recognition and machine learning components.</td><td><img src='images/wavebeat.jpg' width='300px'></td></tr></table>
+        <hr>
+        <h3> Overview of the System </h3>
+        The WaveBeat system presents a unified interface in which a user can define a beat pattern by
+        following a metronome, and then conduct a short piece of music using the defined gestures. To
+        recognize conducting gestures, WaveBeat must first translate user gestures into a set of
+        numerical data vectors that the learning algorithm can use. For the purposes of portability, we
+        use a webcam as the input device; the program senses conducting gestures by tracking the
+        location of a brightly colored glove or baton. A feature extractor records the location of the
+        object in the webcam's two-dimensional field of view as raw data, which we then use as input to
+        the learning algorithm. The learning algorithm used in WaveBeat makes heavy use of the
+        implementation of the Fast Dynamic Time Warping (FastDTW) algorithm provided in the java-ml
+        machine learning library. During training, WaveBeat uses the raw data provided by the
+        feature extractor to train an instance of FastDTW separately for each beat gesture. During
+        performance, each vector of raw data is fed to this algorithm and results in a classification for the
+        current beat. These classifications are then processed and used to vary the parameters of the
+        playback of a piece of music through the <a href='http://chuck.cs.princeton.edu'>ChucK</a> real-time
+        programming language. The entire training-performance process is packaged into a user interface that
+        simplifies the supervised learning process and allows convenient configuration while hiding the
+        details of the learning algorithm used.
+    </div>
+    </body>
+</html>
