@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>
+            Kinect SDK C++ Tutorials - 0. Setup
+        </title>
+        <link rel="stylesheet" type="text/css" href="../main.css">
+    </head>
+    <body>
+    <div id='navbarcontainer'>
+        <ul id='navbar'>
+            <li class='navitem'><a class='nav' href='../../index.html'>Home</a></li>
+            <li class='navitem'><a class='nav' href='../index.html'>Tutorials Home</a></li>
+        </ul>
+    </div>
+    <div id='content'>
+        <h1> Kinect SDK C++ - 0. Setup </h1>
+        This series of tutorials is intended for C++ programmers who want to use Microsoft's Kinect SDK.
+        There will be as little Windows code as possible. We will be using OpenGL for graphics.
+        <p>
+        <b>Goals:</b> Ensure you have the necessary components for coding with Kinect. Set up a Visual Studio
+        project with the proper build configurations.<br>
+        <b>Source:</b> <a href='https://github.com/downloads/kyzyx/Tutorials/1_Basics.zip'>1_Basics.zip</a>
+        <p>
+        Prerequisites: <ul>
+            <li> Windows (this is the Windows SDK, after all) </li>
+            <li> A Kinect (preferably Kinect for PC) </li>
+            <li> Visual Studio (some recent version) </li>
+            <li> Experience with C </li>
+            <li> Familiarity (or willingness to learn) OpenGL </li>
+        </ul>
+
+        This tutorial will be compatible with both GLUT and SDL. GLUT is preconfigured, SDL will require a download.
+        <!--SDL Installation Instructions to come -->
+
+        <hr>
+        <h2> Creating a Kinect Project </h2>
+        <p>
+        <b>Open up Visual Studio and start a new Project.</b> </p>
+        <p>
+        To configure the build rules (i.e. includes and libs) we will use the Property Manager. This will
+        allow us to save the configurations to separate files so that we can use them again later. </p>
+        <p>
+        <b>Go to <u>View</u> > <u>Property Manager</u>. </b> This will ... <!-- MORE -->
+        </p>
+        <p>
+        <b>Right click on the project name and select <u>Add New Project Property Sheet</u>; name it "OpenGL". Create another one named "KinectSDK"</b>.
+        You should see several new items appear under "Debug" and "Release" with the names of your new Property Sheets. Property Sheets are files (extension .props)
+        that contain build configuration data. For modularity, we will create one for our OpenGL info and one for our Kinect SDK info.
+        </p>
+        <p>
+        <b>Right-click the Kinect Property Sheet and click Properties.
+            <ul>
+                <li>Under C/C++ > Additional Include Directories, add "$(KINECTSDK10_DIR)\include". </li>
+                <li>Under Linker > Additional Library Directories, add "$(KINECTSDK10_DIR)\lib\x86". </li>
+                <li>Under Linker > Input > Additional Dependencies, add "kinect10.lib". </li>
+            </ul>
+        </b>
+        Note that to add Include and Library Directories, you must... <!--MORE-->
+        </p>
+        <p>
+        <b>Right-click the OpenGL Property Sheet and click Properties. Under Linker > Input > Additional Dependencies, add the following: </b>
+        <pre>
+opengl32.lib
+glu32.lib
+glut32.lib
+        </pre>
+        <!-- SDL -->
+        </p>
+        <hr>
+        That's it for now - you have a project that is ready for some code.
+        <hr>
+        <p align="right">
+        <a href='kinect1.html'>Next: Kinect Basics</a>
+        </p>
+    </div>
+    </body>
+</html>
