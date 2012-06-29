@@ -4,8 +4,10 @@
             Kinect SDK C++ Tutorials - 0. Setup
         </title>
         <link rel="stylesheet" type="text/css" href="../main.css">
+        <link href="../google-code-prettify/prettify.css" type="text/css" rel="stylesheet" />
+        <script type="text/javascript" src="../google-code-prettify/prettify.js"></script>
     </head>
-    <body>
+    <body onload="prettyPrint()">
     <div id='navbarcontainer'>
         <ul id='navbar'>
             <li class='navitem'><a class='nav' href='../../index.html'>Home</a></li>
@@ -18,6 +20,26 @@
         <b>Goals:</b> Learn how to initialize a Kinect and get RGB data from it. <br>
         <b>Source:</b> <a href='https://github.com/downloads/kyzyx/Tutorials/1_Basics.zip'>1_Basics.zip</a>
 
+        <hr>
+        The <code>initKinect()</code> function initializes a Kinect sensor for use.
+        <pre class="prettyprint">
+bool initKinect() {
+    // Get a working kinect sensor
+    int numSensors;
+    if (NuiGetSensorCount(&numSensors) < 0 || numSensors < 1) return false;
+    if (NuiCreateSensorByIndex(0, &sensor) < 0) return false;
+
+    // Initialize sensor
+    sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
+    sensor->NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, // Depth camera or rgb camera?
+        NUI_IMAGE_RESOLUTION_640x480,    // Image resolution
+        0,      // Image stream flags, e.g. near mode
+        2,      // Number of frames to buffer
+        NULL,   // Event handle
+        &rgbStream);
+    return sensor;
+}
+        </pre>
         <p align="right">
         <a href='#'>Next: Kinect Depth Data (Coming Soon)</a>
         </p>
