@@ -1,10 +1,10 @@
 body {
-    background-color: #59ff37;
+    background-color: #69ca6f;
 }
 
 #content {
     position: relative;
-    width: 61.7%;
+    width: 61.8%;
     left: 19.6%;
     display: block;
     background-color: #ffffff;
@@ -14,7 +14,7 @@ body {
 
 #navbarcontainer {
     width: 100%;
-    background-color: #61db47;
+    background-color: #35963c;
 }
 #navbar {
     list-style-type: none;
@@ -30,11 +30,11 @@ a.nav:link, a.nav:visited {
     width: 120px;
     font-weight: bold;
     color: #FFFFFF;
-    background-color: #61db47;
+    background-color: #35963c;
     text-align: center;
     padding: 4px;
     text-decoration: none;
 }
 a.nav:hover, a.nav:active {
-    background-color: #3dcc1f;
+    background-color: #116117;
 }
