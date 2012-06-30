@@ -27,7 +27,7 @@ li.navitem {
 }
 a.nav:link, a.nav:visited {
     display: block;
-    width: 120px;
+    width: 140px;
     font-weight: bold;
     color: #FFFFFF;
     background-color: #35963c;
@@ -37,4 +37,7 @@ a.nav:link, a.nav:visited {
 }
 a.nav:hover, a.nav:active {
     background-color: #116117;
+}
+img.screenshot {
+    width: 50%;
 }

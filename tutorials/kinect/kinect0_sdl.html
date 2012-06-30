@@ -37,9 +37,38 @@
             <li> Familiarity (or willingness to learn) OpenGL </li>
         </ul>
 
-        This tutorial will be compatible with both GLUT and SDL. GLUT is preconfigured with Visual Studio, whereas SDL will require a download. <br>
+        This tutorial will be compatible with both GLUT and SDL. GLUT is preconfigured with Visual Studio, whereas SDL will require a download.<br>
 
-        <big><a href='kinect0_sdl.html'>Click here for SDL Version of 0. Setup</a></big>
+        <big><a href='kinect0.html'>Click here for the GLUT Version of 0. Setup</a></big>
+
+        <hr>
+        <h2> Installing SDL </h2>
+        <p>
+        Download the latest version of the Visual C++ SDL Development Libraries
+        from <a href='http://www.libsdl.org'>libsdl.org</a>; at the time of 
+        writing this was version <a href='http://www.libsdl.org/release/SDL-devel-1.2.15-VC.zip'>1.2.15</a>
+        </p>
+        <p>
+        Unzip the contents to a suitable place (e.g. C:\).
+        </p>
+        To make our lives easier we will do two things:
+        <ol>
+            <li> <b>Copy the SDL.dll file to our system directory.</b> Go to
+            C:\SDL-1.2.15\lib\x86 (or the equivalent) and copy SDL.dll. Paste
+            it into C:\Windows\SysWOW64 if that folder exists (i.e. you have 
+            a 64-bit version of Windows). Otherwise, paste it into 
+            C:\Windows\system32</li>
+            <li> <b>Add the SDL folder as an environment variable.</b>
+                Open up the start menu, right click Computer, and select
+                Properties. Click "Advanced System Settings" on the left
+                side, go to the Advanced tab in the resulting dialog, and click
+                the button labelled "Environment Variables".
+                <br>
+                Under User variables (the top set of buttons) click "New...".
+                Enter "SDL_DIR" (no quotes) for the variable name and the
+                path to the SDL directory (e.g. "C:\SDL-1.2.15") as the value.
+            </li>
+        </ol>
 
         <hr>
         <h2> Creating a Kinect Project </h2>
@@ -78,11 +107,17 @@
         KINECTSDK10_DIR)
         </p>
         <p>
-        <b>Right-click the OpenGL Property Sheet and click Properties. Under Linker > Input > Additional Dependencies, add the following: </b>
+        <b>Right-click the OpenGL Property Sheet and click Properties. Under Linker > Input > Additional Dependencies, add the following:
+            <ul>
+                <li>Under C/C++ > Additional Include Directories, add "$(SDL_DIR)\include". </li>
+                <li>Under Linker > Additional Library Directories, add "$(SDL_DIR)\lib\x86". </li>
+                <li>Under Linker > Input > Additional Dependencies, add the following: </li>
+        </ul></b>
         <pre>
 opengl32.lib
 glu32.lib
-glut32.lib
+SDL.lib
+SDLmain.lib
         </pre>
         </p>
         <img src='images/0_3.jpg' class = 'screenshot'>
