@@ -18,14 +18,23 @@
         <h1> Kinect SDK C++ - 1. Kinect Basics </h1>
         <p>
         <b>Goals:</b> Learn how to initialize a Kinect and get RGB data from it. <br>
-        <b>Source:</b> <a href='https://github.com/downloads/kyzyx/Tutorials/1_Basics.zip'>1_Basics.zip</a>
+        <b>Source:</b> <a href='https://github.com/kyzyx/Tutorials/tree/master/KinectSDK/1_Basics'>View Source</a> &nbsp;&nbsp;&nbsp;&nbsp; <b>Download:</b> <a href='https://github.com/downloads/kyzyx/Tutorials/1_Basics.zip'>1_Basics.zip</a>
 
         <hr>
         <h2>Overview</h2>
         We have two real pieces of Kinect-specific code. I will go over these
-        in some detail, and give only a high level overview of the display
+        in some detail, and give a fairly high level overview of the display
         code. 
+        <br>
+        <h3>Contents</h3>
+        <ol>
+            <li><a href='#includes'>Includes, Constants, and Globals</a></li>
+            <li><a href='#kinect'>Kinect Code</a></li>
+            <li><a href='#loop'>Windowing, Event Handling, and Main Loop</a></li>
+            <li><a href='#opengl'>Display via OpenGL</a></li>
+        </ol>
         <hr>
+        <h2><a name='includes'>Includes, Constants, and Globals</a></h2>
         <h3> Includes </h3>
         <p> Mostly self explanatory. There are three header files for most
         Kinect uses, NuiApi, NuiImageCamera, and NuiSensor. 
@@ -46,8 +55,8 @@
 #include &lt;NuiSensor.h&gt;
         </pre></td><td>
         <pre class="prettyprint">
-#include &lt;Ole2.h&gt;
 #include &lt;Windows.h&gt;
+#include &lt;Ole2.h&gt;
 
 #include &lt;SDL_opengl.h&gt;
 #include &lt;SDL.h&gt;
@@ -77,6 +86,7 @@ INuiSensor* sensor;            // The kinect sensor
         </pre>
 
         <hr>
+        <h2><a name='kinect'>Kinect Code</a></h2>
         <h3>Kinect Initialization</h3>
 
         This is our first real Kinect-specific code. The 
@@ -144,8 +154,10 @@ void getKinectData(GLubyte* dest) {
         <code>HANDLE</code> we initialized earlier. Then we get an
         <code>INuiFrameTexture</code> so that we can get the pixel data out
         of it, using a <code>NUI_LOCKED_RECT</code>.
-        <br>
-        Now, we can copy the data to our own memory location.
+        <p>
+        Now, we can copy the data to our own memory location. The Pitch of the
+        LockedRect is how many bytes are in each row of the frame; a simple
+        check on that value makes sure that the frame is not empty. 
         <pre class="prettyprint">
     if (LockedRect.Pitch != 0)
     {
@@ -180,7 +192,7 @@ void getKinectData(GLubyte* dest) {
             specifies how long to wait (in milliseconds) for a new frame before
             returning failure.
             </li>
-            <li> The workflow is as follows:
+            <li> To reiterate, the workflow is as follows:
             <ol>
             <li>Acquire a frame: <code>sensor->NuiImageStreamGetNextFrame()</code>. 
             The first parameter is the <code>HANDLE</code> we initialized 
@@ -199,14 +211,36 @@ void getKinectData(GLubyte* dest) {
         <br>
         That's all the Kinect code! The rest is just how to get it onscreen.
         <hr>
-        <h3> Window Initialization </h3>
+        <h2><a name='loop'>Windowing, Event Handling, and Main Loop</a></h2>
+        This section explains the GLUT- or SDL-specific code, consisting
+        of window initialization, event handling, and the main update loop.
+        <p>
         The initialization code is specific to which implementation (SDL or
         GLUT) is used. It simply initializes a window using the appropriate
         API, returning false on failure. The GLUT version also sets up a
-        main loop.
-        <table><tr><th>GLUT</th><th>SDL</th></tr><tr><td>
+        main loop by specifying that the <code>draw()</code> function be
+        called every loop iteration.
+        <p>
+        The main loop is started in the <code>execute()</code> function.
+        In GLUT, the loop is handled behind the scenes, so all we need to
+        do is call the <code>glutMainLoop()</code> function. In SDL we
+        write our own loop. Within each loop, we draw any new frames to 
+        the screen; this processing is done in the <code>drawKinect()</code>
+        function.
+        <p>
+        There are many references online for both GLUT and SDL if you want
+        to do more complex window and loop management or learn more about
+        these functions. 
+<h4>GLUT</h4>
         <pre class="prettyprint">
-void draw(void);
+void draw() {
+   drawKinectData();
+   glutSwapBuffers();
+}
+
+void execute() {
+    glutMainLoop();
+}
 
 bool init(int argc, char* argv[]) {
     glutInit(&amp;argc, argv);
@@ -217,19 +251,109 @@ bool init(int argc, char* argv[]) {
     glutIdleFunc(draw);
     return true;
 }
-        </pre></td><td>
+        </pre>
+<h4>SDL</h4>
         <pre class="prettyprint">
+void execute() {
+    SDL_Event ev;
+    bool running = true;
+    while (running) {
+        while (SDL_PollEvent(&ev)) {
+            if (ev.type == SDL_QUIT) running = false;
+        }
+        drawKinectData();
+        SDL_GL_SwapBuffers();
+    }
+}
+
 bool init(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Surface* screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL);
+    SDL_Surface* screen =
+        SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE | SDL_GL_DOUBLEBUFFER | SDL_OPENGL);
     return screen;
 }
-        </pre></td></tr></table>
+        </pre>
+        <hr>    
+        <h2><a name='opengl'>Display via OpenGL</a></h2>
+        <h3>Initialization</h3>
+        
+        Three steps, as described in the code - Setting up the texture to
+        contain our image frame, preparing OpenGL for drawing our texture,
+        and setting up a camera viewpoint (using an orthographic projection
+        for 2D images). 
+        <pre class="prettyprint">
+    // Initialize textures
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height,
+                 0, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid*) data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // OpenGL setup
+    glClearColor(0,0,0,0);
+    glClearDepth(1.0f);
+    glEnable(GL_TEXTURE_2D);
+
+    // Camera setup
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, 1, -1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+        </pre>
+        Obviously, we should wrap this up in a function. I just put it into
+        <code>main()</code> for brevity. 
+        <pre class="prettyprint">
+int main(int argc, char* argv[]) {
+    if (!init(argc, argv)) return 1;
+    if (!initKinect()) return 1;
+    
+    /* ...OpenGL texture and camera initialization... */
+
+    // Main loop
+    execute();
+    return 0;
+}
+        </pre>
+        <h3>Drawing a frame to screen </h3>
+        This is very standard code. We first copy the kinect data into our own
+        buffer, then specify that our texture will use that buffer. <p>
+        <pre class="prettyprint">
+void drawKinectData() {
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    getKinectData(data);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid*)data);
+        </pre>
+        Then, we draw a rectangle that is textured with our frame. 
+        <pre class="prettyprint">
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex3f(0, 0, 0);
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex3f(width, 0, 0);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3f(width, height, 0.0f);
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3f(0, height, 0.0f);
+    glEnd();
+}
+        </pre>
         <hr>
+        The End! Build and run, making sure that your Kinect is plugged in.
+        You should see a window containing a video stream of what your Kinect
+        sees.
         <hr>
+<table width="100%"><tr><td> 
+        <a href='kinect0.html'>Previous: Setup</a>
+</td><td> 
         <p align="right">
         <a href='#'>Next: Kinect Depth Data (Coming Soon)</a>
         </p>
+</td>
     </div>
     </body>
 </html>
