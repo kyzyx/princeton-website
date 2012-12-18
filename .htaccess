@@ -5,4 +5,4 @@ deny from all
 
 IndexIgnore *
 
-RedirectMatch 403 /\..*$
+RedirectMatch 404 /\..*$
