@@ -25,21 +25,53 @@
         <table><tr><td>
         <h3> Abstract </h3>
         3D graphics are an exciting and versatile method of visualization. However, with the standard interfaces of mouse, keyboard, and 2D screen, interacting with 3D graphics is highly  cumbersome and unintuitive. The ideal system would combine a 3D display with a spatially accurate gesture system, so that the user could interact with the virtual object as if it were a real one.
-        <br>
+        <p>
         I have implemented a prototype system using the <a href="http://software.intel.com/en-us/vcsource/tools/perceptual-computing-sdk">Intel Perceptual Computing SDK</a> and <a href="https://developer.nvidia.com/3d-vision-and-surround-technology">Nvidia 3D automatic</a> that successfully aligns the user's hand and
         the 3D object in space. If you see an object 40cm in front of you, you
         can reach out and move it as if it were an actual object floating there.
+        <p>
         The main focus of the prototype is for a user study to compare whether
         the natural interaction and display is advantageous to users. Previous
         in-air gestural systems have shown low accuracy compared to the mouse;
         however preliminary results have suggested that, when coupled with
         the 3D display space, gestural systems are much faster and more intuitive.
-        <br>
-        Future works will include head tracking (the current alignment system is only static viewpoint) and automatic alignment.
+        <p>
+        Future works will include head tracking (the current alignment system is only static viewpoint) and automatic calibration.
         </td><td></td></tr></table>
         <hr>
         <h3> Overview of the System </h3>
         Coming Soon...
+        <h3> User Study Results </h3>
+        Full analysis of the user study results are being performed, but here are some preliminary observations.
+        <ul>
+            <li>Participants used four different interfaces in a translation task, where they had to select
+            an object in space, move it to a target location, and then release it. Our primary quantitative
+            data was how quickly participants completed these tasks.</li>
+            <li> The four interfaces included all combinations of two input and two output technologies. The
+            input methods were: <ul>
+                <li>Mouse input: By default, the mouse would navigate in the xy plane; holding space toggled
+                this to xz plane navigation. Selection was done using the left mouse button </li>
+                <li>Gestural input: The position of the user's hand was mapped to virtual space; selection
+                was done via spacebar.
+            </ul> The output methods were:<ul>
+                <li> Using a 2D interface with orthographic projections for depth perception (much like the
+                projections used in 3D modelling programs such as Maya, or the minimaps used in videogames)</li>
+                <li> Using a 3D stereoscopic interface, with no other views of the scene. Note that, when
+                combined with the gestural input, the display space was aligned with the gestural space. </li>
+            </ul></li>
+            <li>Thirteen participants between the ages of 18 and 21 took part in the experiment; of these,
+            twelve were male and one was female. One additional female
+            participant was unable to complete the experiment due to nausea when viewing stereoscopic 3D. </li>
+            <li> ***Six participants were clearly fastest and most confident when using the 3D interface with
+            gestural interaction. Six were much faster with the mouse (and had approximately equal performance
+            between 3D and 2D output interfaces). One was equally proficient with all interfaces***</li>
+            <li> Two of participants who were better with mouse interfaces indicated during or after
+            the experiment that they could not consistently fuse the stereoscopic 3D images. </li>
+            <li> No clear correlation was found between performance and
+            prior experience with gaming and/or 3d modelling. </li>
+            <li> The fastest times overall were exclusively in 3D gestural interface.</li>
+        </ul>
+
     </div>
     </body>
 </html>
