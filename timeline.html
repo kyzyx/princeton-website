@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <title> SAGE - Project Timeline</title>
+    </head>
+    <body>
+        <h1> SAGE - The Smarter Academic Graph Explorer </h1>
+        <h2> Project Timeline </h2>
+
+        <dl>
+            <dt> March 16, 2012 </dt>
+            <dd> Completed Design Document and Webpage. <br>
+            Received Microsoft Academic Search App ID</dd>
+            <dt> March 17, 2012 </dt>
+            <dd> Set up code repository on 
+            <a href='http://www.bitbucket.org'>Bitbucket</a></dd>
+            <dt> March 23, 2012 </dt>
+            <dd> All team members have Google Appengine server installed and
+            set up. <br>
+            Registered the Google appid 
+            <a href='http://sage-search.appspot.com'>sage-search</a></dd>
+            <dt> March 25, 2012 </dt>
+            <dd> 
+                <b> Backend:</b> The server can construct queries to the Microsoft
+                API and parse the response. <br>
+                <b> Frontend:</b> Working experimental dynamic graph explorer - 
+                clicking on a node centers it, exposes certain nodes, and hides 
+                other nodes.
+            </dd>
+            <dt> March 27, 2012 </dt>
+            <dd> 
+                <b>Backend:</b> Major refactoring of backend code to modularize query responders and data
+                handling. Implemented test graph query responder. <br>
+                <b>Frontend:</b> Basic CSS template and navbar in all pages
+            </dd>
+            <dt> March 28, 2012 </dt>
+            <dd> 
+                <b> Backend:</b> The server can respond to client requests by constructing the appropriate
+                queries, and then returning them in JSON. <br>
+                <b> Frontend:</b> Major refactoring of client code (it was previously experimental) to separate
+                the graph Renderer, the query code, and the dynamic navigation functionality. <br> 
+                Hooked up all of the client modules to get data from the server and operate on it. 
+            </dd>
+            <dt> March 30, 2012 </dt>
+            <dd> 
+                Client-server communication working with Microsoft queries. Client
+                can receive and render the basic graph data, as well as navigate the
+                academic graph.
+            </dd>
+            <dt>April 11, 2012</dt>
+            <dd> 
+            Experimented with an alternate layout manager based on 
+            a radial layout, to deal with shortcomings of arborjs.
+            </dd>
+            <dt>April 12, 2012</dt>
+            <dd> 
+            Implemented basic sidebar functionality. <br>
+            Implemented basic mouseover functionality
+            </dd>
+            <dt>April 13, 2012</dt>
+            <dd> 
+                <b> Backend:</b> Implemented logging of requests and timing statistics <br>
+                <b> Frontend:</b> Ported frontend to use new radial layout
+                based on divs instead of canvas. <br> 
+                
+            </dd>
+            <dt>April 15, 2012</dt>
+            <dd> 
+                Parallelized neighbor queries by asynchronously performing queries from microsoft. Server time speedup of almost 10x. 
+            </dd>
+            <dt>April 18, 2012</dt>
+            <dd> 
+            <b>Frontend:</b> Added triangular directed edges to radial layout. <br>
+            <b>Backend:</b> Bug with async queries meant that the speedup was not as dramatic as first thought. The bottleneck is round trip time from our server to microsoft, where each query is about 2.8 seconds.
+            </dd>
+            <dt>April 20, 2012</dt>
+            <dd> 
+            Eliminate neighbor queries for which we already have the data. Makes revisiting nodes much faster
+            </dd>
+            <dt>April 21, 2012</dt>
+            <dd> 
+                Added empty files for about, contact, and help
+            </dd>
+            <dt>April 24, 2012</dt>
+            <dd> 
+                Cosmetic changes - color changes and logo. Minor frontend bug fixes with odd mouseover timing
+            </dd>
+            <dt>April 25, 2012</dt>
+            <dd> 
+            Implemented tabs using jqueryUI tabs
+            </dd>
+            <dt>April 26, 2012</dt>
+            <dd> 
+                Code cleanup and encryption of appid in preparation for pushing live onto appengine. 
+                First version of SAGE pushed onto google appengine. 
+            </dd>
+            <dt>April 28, 2012</dt>
+            <dd> 
+            Cosmetic changes (colors, shapes, and sizes) in preparation for demo hour. 
+            Demonstrated SAGE at Demo Hour for prefrosh.
+            </dd>
+            <dt>April 29, 2012</dt>
+            <dd> 
+                Finished About, Contact, and Help pages. Worked on fitting
+                text into the alloted space for e.g. long author names or titles.
+            </dd>
+            <dt>May 3, 2012</dt>
+            <dd> 
+                Added favicon. Finished implementing tab functionality (closeable, draggable, mouse events for displaying/undisplaying). 
+            </dd>
+            <dt>May 8, 2012</dt>
+            <dd> 
+                To protect against confusing behavior on multiple clicks, only load the result of the most recent neighbor click. Color scheme overhaul.
+            </dd>
+            <dt>May 9, 2012</dt>
+            <dd> 
+                Instead of displaying text over the nodes, have a separate "tag" containing author and year. Fix inconsistencies in node transition animation and hovertext placement. Cosmetic changes and bug fixes
+            </dd>
+            <dt>May 10, 2012</dt>
+            <dd> 
+            Animate node tag transitions. Delete unused edges to prevent 
+            cluttering up the DOM. Cosmetic changes and bug fixes.
+            </dd>
+            <dt>May 14, 2012</dt>
+            <dd> 
+                Final bug fixes: Unicode support, animation inconsistencies, 
+                and timeout handling
+            </dd>
+        </dl>
+
+        <br><br>
+        <a href="333.html">Project Home</a>
+    </body>
+</html>
