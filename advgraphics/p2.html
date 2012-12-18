@@ -1,0 +1,183 @@
+<html>
+    <head>
+        <title>Edward Zhang - COS526 Assignment 2 - Laplacian Meshes</title>
+    </head>
+    <body>
+        <h1> COS526 Fall 2012 - Assignment 2: Laplacian Meshes </h1>
+        <h2> Edward Zhang (edwardz)</h2>
+        Laplacian meshes represent vertex locations relative to neighboring vertices. This is useful for deforming meshes, since with a regular mesh, you have to
+        drag lots of vertices to new locations to change the mesh's shape; with
+        Laplacian mesh representations this becomes a single change. Imagine you
+        had a model of a human in a neutral pose; with a Laplacian mesh, to
+        raise their arm, you could just drag their elbow into a different position and the rest of the arm would move with it (whereas with a normal mesh, only that vertex on the elbow would move but not changing the pose at all).
+        <br>
+        I implemented a Mesh class that used Laplacian Mesh representations to perform
+        several operations. I made use of the CSparse library for sparse matrix operations.
+
+        <!-- ############################################################# -->
+        <h2> Mesh Representation </h2>
+        There are two fundamental variables that are used for the mesh representation. The first
+        is the symmetric Laplacian matrix. This matrix, a CSparse matrix, is constructed via the
+        vertex adjacencies of the mesh. Alternatively, the cotangent weights or the mean value
+        weights could have been used.
+
+        After constructing a Laplacian matrix, the differential coordinates for each of the
+        x, y, and z coordinates can be constructed by multiplying the Laplacian by the original
+        coordinates. These coordinates represent the difference between the average position of
+        its neighbors and the vertex's actual position, which corresponds to local detail.
+
+        When reconstructing and deforming a mesh, we must add at least one more row to the Laplacian Matrix to make its rank
+        greater than or equal to the number of vertices in the mesh.
+        These rows consists of a large constant <i>c></i> at the column corresponding to the vertex to be fixed. When
+        solving for vertex Cartesian coordinates from the differential coordinates and the Laplacian, we also need to add rows
+        to the differential coordinates. The row in the differential coordinate vector corresponding to the vertex being fixed at
+        point (<i>x,y,z</i>) is set to <i>cx, cy, cz</i> in the differential coordinate vector for each coordinate, respectively.
+        This weight <i>c</i> is chosen to be a very large constant (1e10) so that Laplacian coordinates will not "pull them away" from the
+        desired location.
+        <hr>
+        <!-- ############################################################# -->
+        <h2> Mesh Reconstruction </h2>
+        When reconstructing a mesh, we simply need to set the location of one vertex, i.e. add one row to the Laplacian matrix.
+        <table><tr>
+                <td><img src="output/ico.jpg"></td><td><img src="output/cheetah.jpg"></td>
+            </tr>
+            <tr>
+                <td> Reconstructed Icosahedron</td><td> Reconstructed Cheetah </td>
+        </tr></table>
+        <hr>
+
+        <!-- ############################################################# -->
+        <h2> Mesh Deformation and Region of Interest Deformation </h2>
+        To perform mesh deformation, we simply specify more than one vertex location to be fixed. The
+        manipulations of the Laplacian Matrix and the differential coordinate vector is exactly as described above.
+        <table>
+            <tr>
+                <td><img src="output/sel_ico.jpg"></td><td><img src="output/deform_ico.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Icosahedron</td><td> Deformed Icosahedron </td>
+            </tr>
+            <tr>
+                <td><img src="output/sel_cheetah.jpg"></td><td><img src="output/deform_cheetah.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Cheetah</td><td> Deformed Cheetah </td>
+            </tr>
+        </table>
+        I also implemented Region of Interest Deformation. To do this, I implemented a simplified
+        version of Dijkstra's algorithm that, given a control vertex and a radius <i>r</i>, determined all vertices
+        whose geodesic distance from it was greater than <i>r</i>. In contrast to a full
+        Dijkstra search, which provides all distances from the control point, I could terminate the
+        search once no vertex in the priority queue were closer than <i>r</i>(i.e. I had already
+        visited all points that were less than the radius away from the control point).
+        This was supplied as part of a function that returned a list of all vertices greater than <i>r</i> away from a vertex <i>v</i>. The lap client program then treated these vertices as a second set of
+        anchor points.<br>
+        The lap client provides the following interface for using the ROI code: After selecting one
+        control point, you can press '+' to start using the ROI tool. Pressing '+' repeatedly will
+        increase the radius (i.e. the number of points that can move with the control point) and '-'
+        will decrease the radius again. The fixed points will be highlighted as green nodes.
+        <table>
+            <tr>
+                <td><img src="output/roiedit.jpg"></td><td><img src="output/roiresult.jpg"></td><td><img src="output/sillybirdhead.jpg"></td>
+            </tr>
+                <td>Editing with ROI</td><td>Result</td><td>Silly bird head created with ROI</td>
+            <tr>
+            </tr>
+        </table>
+        <hr>
+        <!-- ############################################################# -->
+        <h2>Parameterization</h2>
+        Parameterization is performed by setting all the Laplacian coordinates to 0. Intuitively, this
+        means that each vertex is exactly the average of its neighbors, which only happens on a flat
+        surface.
+        <br>
+        The interface for using this works as follows. In the client viewer program, the user selects
+        two adjacent vertices and then presses 'p'. This causes the two triangles adjacent to the edge
+        between the two vertices to be removed, and the four corners of that quadrilateral are set
+        as vertices of the unit square. The Laplacian for all other vertices is set to zero and the
+        system solved as above.
+        <br>
+        It is necessary to replace the rows of the Laplacian involving the four corners with the
+        fixed rows (<i>c</i> along the diagonal) instead of leaving those rows as in the regular
+        Laplacian, since otherwise other vertices tend to get pulled out of the square or very close
+        to the corners, since the fixed corner vertex Laplacians pull their neighbors towards them.
+        <br> Note the extreme distortion and the difference in density between the middle of the square
+        and the sides. This distortion makes this a rather poor method of parameterization, as can
+        be seen in the texture mapping example.
+        <table>
+            <tr>
+                <td><img src="output/param_sel_ico.jpg"></td><td><img src="output/param_ico.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Icosahedron</td><td> Parameterized Icosahedron </td>
+            </tr>
+            <tr>
+                <td><img src="output/param_sel_dra.jpg"></td><td><img src="output/param_dra.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Dragon</td><td>Parameterized Dragon</td>
+            </tr>
+        </table>
+        <hr>
+        <!-- ############################################################# -->
+        <h2>Texture Mapping</h2>
+        Texture mapping uses the parameterization subroutine described above. It maps the corners of
+        the square to the corners of a specified texture; other vertices are mapped based on their
+        coordinates in the parameterized square. Note the severe distortion near the cut out square -
+        the checkerboard is very dense near the removed square, and very spread out far away from it.
+        <br>
+        <table>
+            <tr>
+                <td><img src="input/checker.bmp"></td><td><img src="output/tex_ico.jpg"></td><td><img src="output/tex_dra.jpg"></td>
+            </tr>
+            <tr>
+                <td> Checkerboard Texture </td><td> Textured Icosahedron</td><td> Textured Dragon </td>
+            </tr>
+        </table>
+        <hr>
+        <!-- ############################################################# -->
+        <h2>Membrane Surface Interpolation</h2>
+        Membrane Surface Interpolation "shrink-wraps" the mesh around the anchored points.
+        It works by setting the Laplacian at non-anchored vertices to 0.
+        <table>
+            <tr>
+                <td><img src="output/sel_mem_dra.jpg"></td><td><img src="output/mem_dra.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Dragon</td><td>Membrane Surface Dragon</td>
+            </tr>
+            <tr>
+                <td><img src="output/sel_mem_cheetah.jpg"></td><td><img src="output/mem_cheetah.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Cheetah</td><td> Membrane Surface Cheetah </td>
+            </tr>
+        </table>
+        <hr>
+        <!-- ############################################################# -->
+        <h2>Surface Function Interpolation</h2>
+        Instead of solving for x, y, and z coordinates, we can also solve for functions on the surface
+        of the mesh using the Laplacian and the differential coordinates as well. To do this, we use the
+        fixed function values instead of the fixed coordinate values and set the laplacian coordinates
+        to 0 everywhere else. This creates a smooth interpolation because the value of the function at
+        each vertex tends to be the average of the values of its neighbors.
+        <br>
+        To produce these I set the values of 3 vertices at fairly arbitrary locations to positive and
+        negative values on the order of 100s.
+        <table>
+            <tr>
+                <td><img src="output/sf_dra.jpg"></td><td><img src="output/sfi_dra.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Dragon Values</td><td>Interpolated Dragon Values</td>
+            </tr>
+            <tr>
+                <td><img src="output/sf_cheetah.jpg"></td><td><img src="output/sfi_cheetah.jpg"></td>
+            </tr>
+            <tr>
+                <td> Original Cheetah Values</td><td> Interpolated Cheetah Values</td>
+            </tr>
+        </table>
+        <hr>
+    </body>
+</html>

@@ -1,0 +1,411 @@
+<html>
+    <head>
+        <title>Edward Zhang - COS526 Assignment 1 - Image Analogies</title>
+    </head>
+    <body>
+        <h1> COS526 Fall 2012 - Assignment 1: Image Analogies </h1>
+        <h2> Edward Zhang (edwardz)</h2>
+
+        Image analogies is a versatile technique that can be used for image/texture synthesis,
+        image filtering, artistic style imitation, and many other things. It works in
+        terms of analogies: it takes in 3 images, A, A', and B, and synthesizes B' such that B is to B' as A is to A'. So if A' is some filter appied to A, then
+        B' will be the same filter applied to B (in theory).
+        <!-- ############################################################# -->
+        <hr>
+        <h2> Basic Image Analogies </h2>
+        I first implemented the vanilla image analogy algorithm with no coherence search and no multiresolution.
+        This was seeded by two rows of random pixels selected from the A' image.
+
+        <br>
+        My algorithm makes two assumptions that I use in all versions:
+        <ul>
+            <li>To simplify dealing with edges, I "mirror" all the pixels over the edge in order to obtain
+            full neighborhoods for each pixel. For example, the neighbors of pixel (0,0) are: (0,1), (1,1),
+            (1,0), (1,-1) = (1,1), (0,-1) = (0,1), (-1,-1) = (1,1), (-1,0) = (1,0), (-1,1) = (1,1)</li>
+            <li>Distances are calculated using the Euclidean (L2) metric on the luminance of each pixel (the Y
+            channel in the YIQ representation of the pixel).</li>
+        </ul>
+        I also experimented with distances in RGB color space, as well as the CIELAB color space (in which distances
+        are more perceptually relevant).
+
+        <br><b>Sample images: Blur filter</b>
+        <table>
+            <tr>
+                <td><img src="input/blur.A.bmp"></td><td><img src="input/blur.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/blur.B.bmp"></td><td><img src="output/blur.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/blur.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <br><b>Sample images: Emboss filter</b>
+        <table>
+            <tr>
+                <td><img src="input/emboss.A.bmp"></td><td><img src="input/emboss.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/emboss.B.bmp"></td><td><img src="output/emboss.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/emboss.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2> Approximate Nearest Neighbor Search Acceleration </h2>
+        Using the ANN library, the search for similar pixels becomes a lot simpler and faster. However,
+        there are two drawbacks to using this acceleration. One is that we may not obtain the best
+        candidate pixel for each location; however this can be seen as relatively minor because the
+        spirit of the algorithm does not require the single closest matching pixel.
+        <br>
+        One aspect that needed careful manipulation was the Gaussian weighting:
+        <br>
+        <img src="writeupimages/eq1.gif">
+        <br>
+        Although the ANN library does not support arbitrary distance functions, we can still get the
+        appropriate weighting by multiplying each coordinate by the square root of the coefficient:
+        <br>
+        <img src="writeupimages/eq2.gif">
+        <br>
+        One can see that this results in the same distance calculated as in the original Gaussian
+        Weighting
+
+        <br><b> Timings for texture synthesis </b>
+        <table>
+            <tr>
+                <td>Brute force search</td><td>73s</td>
+            </tr><tr>
+                <td>ANN Accelerated search</td><td>2s</td>
+            </tr>
+        </table>
+        <br><b>Sample images: Texture Synthesis</b>
+        <table>
+            <tr>
+                <td><img src="output/synth1.jpg"></td><td><img src="output/synth2.jpg"></td>
+            </tr>
+            <tr>
+                <td>ANN Acclerated Result</td><td>Brute Force Result</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Coherence Search</h2>
+        Coherence search allows patches of pixels from the original image to be synthesized together.
+        This is accomplished by examining the already-synthesized neighbors of a pixel to consider
+        pixels in A' adjacent to where the neighbors came from. This is implemented as in the Image
+        Analogies paper. The effects can be seen in the source maps below.
+        <table>
+            <tr>
+                <td><img src="output/coh0.jpg"></td><td><img src="output/coh2.jpg"></td><td><img src="output/coh9.jpg"></td>
+            </tr><tr>
+                <td><img src="output/coh0.bmp.src.0.jpg"></td><td><img src="output/coh2.bmp.src.0.jpg"></td><td><img src="output/coh9.bmp.src.0.jpg"></td>
+            </tr><tr>
+                <td>Kappa = 0</td><td>Kappa = 2</td><td>Kappa = 9</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Multiresolution Synthesis</h2>
+        Constructing a Gaussian Pyramid was accomplished with the help of my COS426 Assignment 1
+        code. I simply imported my version of R2Image and R2Pixel, and I already had the scaling
+        with Gaussian Resampling built in. The initial B' image is populated with random pixels from
+        A'. Multiresolution effectively allows larger structures to be replicated in the final image.
+        The effect can be clearly seen in the images below (Kappa = 1), where the higher level images
+        have more regular patterns.
+        <table>
+            <tr>
+                <td><img src="output/multi0.jpg"></td><td><img src="output/multi2.jpg"></td><td><img src="output/multi4.jpg"></td>
+            </tr><tr>
+                <td><img src="output/multi0.bmp.src.0.jpg"></td><td><img src="output/multi2.bmp.src.1.jpg"></td><td><img src="output/multi4.bmp.src.3.jpg"></td>
+            </tr><tr>
+                <td>No Multiresolution</td><td>Two levels</td><td>Three levels</td>
+            </tr><tr>
+                <td><img src="output/Bp.1.jpg"></td><td><img src="output/Bp.2.jpg"></td><td><img src="output/Bp.3.jpg"></td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Luminance Remapping</h2>
+        Luminance Remapping was used mostly for the artistic filters when the colors (and luminances)
+        in the (A,B) images were quite different. It is clear in the example below that there are
+        artifacts in the non-remapped version that are much less obvious in the remapped version; for
+        example in the non-remapped version we see odd white vertical strips, as well as more pronounced
+        banding and odd patterns in the sky. As well, the details in the remapped version are much
+        clearer, such as the boat in the remapped version. Looking at the source maps clearly shows a
+        much better mixing of source pixels in the remapped version.
+        <table>
+            <tr>
+                <td><img src="input/lum.A.bmp"></td><td><img src="input/lum.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/lum.B.bmp"></td><td><img src="output/lum.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td><img src="output/lum_noremap.jpg"></td><td><img src="output/lum.jpg"></td>
+            </tr><tr>
+                <td> Watercolor with no remapping </td><td> Watercolor with remapping</td>
+            </tr><tr>
+                <td><img src="output/lum_noremap.bmp.src.1.jpg"></td><td><img src="output/lum.bmp.src.1.jpg"></td>
+            </tr><tr>
+                <td> Source pixel diagram  </td><td> Source pixel diagram</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Image Filters</h2>
+        <br><b>Sample images: Blur filter</b>
+        <table>
+            <tr>
+                <td><img src="input/blur.A.bmp"></td><td><img src="input/blur.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/blur.B.bmp"></td><td><img src="output/blur.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/blur.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <br><b>Sample images: Emboss filter</b>
+        <table>
+            <tr>
+                <td><img src="input/emboss.A.bmp"></td><td><img src="input/emboss.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/emboss.B.bmp"></td><td><img src="output/emboss.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/emboss.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Artistic Filters</h2>
+        <br><b>Clothify filter</b>: This filter from GIMP makes an image look like it is woven cloth.
+        Run with kappa = 2, neighborhood size of 9,  and luminance remapping
+        <table>
+            <tr>
+                <td><img src="input/clothify.A.bmp"></td><td><img src="input/clothify.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/clothify.B.bmp"></td><td><img src="output/clothify.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/clothify.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <br><b>Oil Painting filter</b>: This filter from GIMP makes an image look like it is an oil
+        painting.
+        Run with kappa = 1 and luminance remapping
+        <table>
+            <tr>
+                <td><img src="input/oil.A.bmp"></td><td><img src="input/oil.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/oil.B.bmp"></td><td><img src="output/oil.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/oil.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Texture Synthesis</h2>
+        <br><b>Sample Texture - Flowers</b><br>
+        Larger images were synthesized by using four multiresolution levels and a kappa of 5
+        <table>
+            <tr>
+                <td><img src="input/synth1.A.bmp"></td><td><img src="input/synth1.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/synth1.B.bmp"></td><td><img src="output/synth1.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/synth1.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr><tr>
+                <td><img src="output/synthmed.jpg"></td><td><img src="output/synthlarge.jpg"></td>
+            </tr><tr>
+                <td> 400x400 </td><td> 800x800 </td>
+            </tr><tr>
+                <td><img src="output/synthmed.bmp.src.3.jpg"></td><td><img src="output/synthlarge.bmp.src.3.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagrams</td>
+            </tr>
+        </table>
+        <br><b>Fire</b><br>
+        Synthesized using a neighborhood of 9 (radius 4), kappa = 1, and four multiresolution levels.
+        Fire is hard to synthesize
+        as texture since there is larger scale structure (like swirls of brighter spots) that are hard
+        to capture using the analogy method.
+        <table>
+            <tr>
+                <td><img src="input/fire.Ap.bmp"></td><td><img src="output/fire.jpg"></td><td><img src="output/fire.bmp.src.3.jpg"></td>
+            </tr><tr>
+                <td>A'</td><td>B'</td><td> Source Pixel Diagram </td>
+            </tr><tr>
+                <td><img src="input/fire.Ap.bmp"></td><td><img src="output/firelarge.jpg"></td><td><img src="output/firelarge.bmp.src.3.jpg"></td>
+            </tr><tr>
+                <td>A'</td><td>B'</td><td> Source Pixel Diagram </td>
+            </tr>
+        </table>
+        <br><b>Leopard print</b><br>
+        Synthesized using a neighborhood of 9 (radius 4), kappa = 1 and 4 multiresolution levels.
+        <table>
+            <tr>
+                <td><img src="input/leopard.Ap.bmp"></td><td><img src="output/leopard.jpg"></td><td><img src="output/leopard.bmp.src.3.jpg"></td>
+            </tr><tr>
+                <td>A'</td><td>B'</td><td> Source Pixel Diagram </td>
+            </tr><tr>
+                <td><img src="input/leopard.Ap.bmp"></td><td><img src="output/leopardlarge.jpg"></td><td><img src="output/leopardlarge.bmp.src.3.jpg"></td>
+            </tr><tr>
+                <td>A'</td><td>B'</td><td> Source Pixel Diagram </td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Texture by Numbers</h2>
+        <br><b>River</b>
+        <table>
+            <tr>
+                <td><img src="input/numbers1.A.bmp"></td><td><img src="input/numbers1.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/numbers1.B.bmp"></td><td><img src="output/numbers1.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/numbers1.bmp.src.2.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <br><b>Waterfall</b>
+        <table>
+            <tr>
+                <td><img src="input/numbers2.A.bmp"></td><td><img src="input/numbers2.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/numbers2.B.bmp"></td><td><img src="output/numbers2.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/numbers2.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <br><b>Heart</b>
+        <table>
+            <tr>
+                <td><img src="input/numbers3.A.bmp"></td><td><img src="input/numbers3.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/numbers3.B.bmp"></td><td><img src="output/numbers3.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/numbers3.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Texture Transfer</h2>
+        I tried weighting the vectors as suggested in the paper such that the similarity between the
+        (A,B) pair over the (A', B') pair. However, this did not appear to make much difference.
+        Their recommendation of using a neighborhood in (A,B) of 1x1 size did have nice effects.
+        <br><b>Gravel</b><br>Kappa = 50, neighborhood size 9 in Ap, Bp, neighborhood size 1 in A, B
+        <table>
+            <tr>
+                <td><img src="input/gravel.A.bmp"></td><td><img src="input/transfer.B.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> B</td>
+            </tr><tr>
+                <td><img src="output/transfer.jpg"></td><td><img src="output/transfer.bmp.src.0.jpg"></td>
+            </tr><tr>
+                <td> B' </td><td> Source Pixel Diagram'</td>
+            </tr>
+        </table>
+        <br><b>Fabric</b><br>Kappa = 160, neighborhood size 5 in Ap, Bp, neighborhood size 1 in A, B
+        <table>
+            <tr>
+                <td><img src="input/transfer.A.bmp"></td><td><img src="input/transfer.B.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> B</td>
+            </tr><tr>
+                <td><img src="output/transfer2.jpg"></td><td><img src="output/transfer.bmp.src.0.jpg"></td>
+            </tr><tr>
+                <td> B' </td><td> Source Pixel Diagram'</td>
+            </tr>
+        </table>
+        <!-- ############################################################# -->
+        <hr>
+        <h2>Image Colorization</h2>
+        <table>
+            <tr>
+                <td><img src="input/color.A.bmp"></td><td><img src="input/color.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/color.B.bmp"></td><td><img src="output/color.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/color.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="input/color2.A.bmp"></td><td><img src="input/color2.Ap.bmp"></td>
+            </tr><tr>
+                <td> A </td><td> A'</td>
+            </tr><tr>
+                <td><img src="input/color2.B.bmp"></td><td><img src="output/color2.jpg"></td>
+            </tr><tr>
+                <td> B </td><td> B'</td>
+            </tr><tr>
+                <td colspan=2><img src="output/color2.bmp.src.0.jpg"></td>
+            </tr><tr>
+            <td colspan=2>Source Pixel Diagram</td>
+            </tr>
+        </table>
+    </body>
+</html>
