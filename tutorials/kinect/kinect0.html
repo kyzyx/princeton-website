@@ -42,6 +42,20 @@
         <big><a href='kinect0_sdl.html'>Click here for SDL Version of 0. Setup</a></big>
 
         <hr>
+        <h2> Installing GLUT </h2>
+        Most windows systems do not come with GLUT. GLUT is an old but widely
+        used system for windowing and handling events that is commonly used with
+        OpenGL.
+        <ol>
+            <li>Download and unzip the MSVC freeglut binaries from <a href='http://www.transmissionzero.co.uk/software/freeglut-devel/'>http://www.transmissionzero.co.uk/software/freeglut-devel/</a></li>
+            <li>Copy the Lib/ and Include/ directories you just unzipped into
+            C:/Program Files/Microsoft SDKs\Windows\v7.0A or the analogous path
+            on your machine (the folder should already have Include/ and Lib/
+            subfolders)</li>
+            <li>Rename the bin/freeglut.dll file to glut32.dll (this isn't required, but will help other programs that use glut to find the right file)</li>
+            <li>Copy the newly renamed glut32.dll into C:/Windows/System32</li>
+        </ol>
+        If you are developing for a 64-bit system, then instead work with bin/x64/freeglut.dll instead.
         <h2> Creating a Kinect Project </h2>
         <b>Open up Visual Studio and start a new Empty Project.</b> Click 
         File > New > Project...; then select C++ > General > Empty Project. 
