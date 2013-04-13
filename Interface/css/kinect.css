@@ -1,0 +1,74 @@
+body {
+background-image: linear-gradient(left top, #2694e8 0%, #FFFFFF 30%);
+background-image: -o-linear-gradient(left top, #2694e8 0%, #FFFFFF 30%);
+background-image: -moz-linear-gradient(left top, #2694e8 0%, #FFFFFF 30%);
+background-image: -webkit-linear-gradient(left top, #2694e8 0%, #FFFFFF 30%);
+background-image: -ms-linear-gradient(left top, #2694e8 0%, #FFFFFF 30%);
+
+background-image: -webkit-gradient(
+	linear,
+	left top,
+	right bottom,
+	color-stop(0, #2694e8),
+	color-stop(0.30, #FFFFFF)
+);
+
+}
+#visualization {
+border: 9px solid #000;
+margin: 0px auto;
+display:block;
+}
+#timelinecontainer {
+    margin: 5px;
+    width: 720px;
+    height: 120px;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+#timeline {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+	font-family:Helvetica,sans-serif;
+	font-weight: normal;
+	font-size: 70pt;
+}
+
+div.widgetsettings {
+width: 800px;
+}
+
+div.setting {
+border: 1px solid #000;
+padding: 15px;
+margin: 5px;
+}
+
+#widgetpicker {
+}
+#widgetsettingscontainer {
+margin: 5px;
+}
+
+#imagecontainer {
+padding: 15px;
+	border-radius: 20px;
+	-moz-border-radius: 20px;
+border: 1px solid #000;
+}
+
+#timeline li.timelinekiblet {
+    display:inline;
+}
+td > h1 {
+    margin-bottom: 10px;
+}
+td {
+    padding-left: 3px;
+    padding-right: 3px;
+}

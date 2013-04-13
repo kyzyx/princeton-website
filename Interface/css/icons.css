@@ -1,0 +1,92 @@
+.icon_arc {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_arc.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_hands {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_hands.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_clap {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_clap.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_ball {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_both.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_punch {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_punch.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_wave {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_wave.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+.icon_body {
+	position: relative;
+	left: 13px !important;
+	top: 20px !important;
+	background-size: 45px 45px;
+	margin-left: auto;
+	margin-right: auto;
+	background-image:url(icons/widget_body.png) !important;
+	width: 45px !important;
+	height: 45px !important;
+}
+/*.icon_8 {*/
+	/*position: relative;*/
+	/*left: 13px !important;*/
+	/*top: 20px !important;*/
+	/*background-size: 45px 45px;*/
+	/*margin-left: auto;*/
+	/*margin-right: auto;*/
+	/*background-image:url(icons/widget_punch.png) !important;*/
+	/*width: 45px !important;*/
+	/*height: 45px !important;*/
+/*}*/
+#widgetpicker label.ui-button.ui-widget.ui-state-default{
+width: 70px;
+height:70px;
+}
