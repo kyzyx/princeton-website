@@ -2,19 +2,24 @@
 // TODO: Kiblet rearranging and deleting
 // TODO: Kiblet autosaving and default deletes
 var ORIGINAL_CELL_HEIGHT = 0;
-function refreshAccordion() {
+function calcAccordionDivHeight() {
     var wsc = $('#widgetsettingscontainer');
-    var state = wsc.accordion("option", "active");
-    wsc.accordion('destroy').accordion();
-    wsc.accordion('option', 'active', state);
     var buttonsheight = $('#widgetpicker').outerHeight() + $('#savebuttons').outerHeight();
     var hdrs = wsc.children('h3');
     var numFrames = hdrs.length;
     var headersheight = Math.max(hdrs.outerHeight(), hdrs.last().outerHeight());
     var padding = parseInt($('.widgetsettings').css('padding-top')) + parseInt($('.widgetsettings').css('padding-bottom')) + 30;
     var newheight = ORIGINAL_CELL_HEIGHT - buttonsheight - numFrames*headersheight - padding;
-    // TODO: Why doesn't this fix everything?
-    $('.widgetsettings').height(newheight);
+    return newheight;
+}
+function refreshAccordion() {
+    var wsc = $('#widgetsettingscontainer');
+    var state = wsc.accordion("option", "active");
+    $('.widgetsettings').height(calcAccordionDivHeight());
+    wsc.accordion('destroy').accordion();
+    $('.widgetsettings').height(calcAccordionDivHeight());
+    wsc.accordion('option', 'active', state);
+    $('.widgetsettings').height(calcAccordionDivHeight());
 }
 
 function initWidgetSettings(widget, data) {
@@ -72,6 +77,7 @@ function createTimelineKiblet(i, dommanager) {
     var currkiblet = dommanager.kib.getKiblet(i);
     var title = "Kiblet " + i;
     if (currkiblet.kiblet.kiblet_name) title = currkiblet.kiblet.kiblet_name;
+    else currkiblet.kiblet.kiblet_name = title;
     // TODO: Make this look better
     newelt.append('<input type="radio" name="timelinekiblets" id="timelinekiblet' + i + '"><label id = "timelinekiblet' + i + '_label" for="timelinekiblet' + i + '">' + title + '</label>');
     $("#timeline").append(newelt);

@@ -10,8 +10,9 @@ function rotateAround(x, y, px, py, t) {
 }
 var Skeleton = function() {
     var joints = {
-        head: [0, 0.7],
+        head: [0, 0.71],
         hips: [0, 0.35],
+        neck: [0, 0.6],
         rightfoot: [-0.1, 0.01],
         leftfoot:  [ 0.1, 0.01],
         righthand: [-0.2, 0.3],
@@ -62,6 +63,7 @@ var Skeleton = function() {
             joints['lefthand'] = rotateAround(joints['lefthand'][0], joints['lefthand'][1], joints['hips'][0], joints['hips'][1], t-ot);
             joints['rightshoulder'] = rotateAround(joints['rightshoulder'][0], joints['rightshoulder'][1], joints['hips'][0], joints['hips'][1], t-ot);
             joints['leftshoulder'] = rotateAround(joints['leftshoulder'][0], joints['leftshoulder'][1], joints['hips'][0], joints['hips'][1], t-ot);
+            joints['neck'] = [(joints['rightshoulder'][0] + joints['leftshoulder'][0])/2,(joints['rightshoulder'][1] + joints['leftshoulder'][1])/2];
         }
     };
     var currdrag = '';

@@ -22,7 +22,7 @@ var Kib = function(s) {
         setActiveKiblet: function(i) { activeKiblet = i; activeWidget = 0; },
         setActiveWidget: function(i) { activeWidget = i; },
         deleteActiveKiblet: function() {
-            kiblets = kiblets.splice(activeKiblet, 1);
+            kiblets.splice(activeKiblet, 1);
         },
     };
     // New KIB has one kiblet with background and kiblet settings

@@ -1,4 +1,4 @@
-// TODOs: psychedelic background, test ovals, implement silhouette and image, implement polygons
+// TODOs: implement polygons
 // ----------------------------
 // Background Rendering Methods
 // ----------------------------
@@ -96,14 +96,14 @@ function renderBg(widget, ctx, w, h) {
 // ------------------------
 
 function ovalfrom(ctx, x1, y1, x2, y2, w) {
-    ctx.setTransform(1,0,0,0,1,0);
-    ctx.scale(Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)),w);
-    ctx.rotate(atan2(y2-y1,x2-x1));
+    ctx.save();
     ctx.translate((x1+x2)/2, (y1+y2)/2);
+    ctx.rotate(Math.atan2(y2-y1,x2-x1));
+    ctx.scale(Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1))/2,w);
     ctx.beginPath();
     ctx.arc(0,0,1,0,2*Math.PI);
     ctx.fill();
-    ctx.setTransform(1,0,0,0,1,0);
+    ctx.restore();
 }
 
 function renderSkeletonAvatar(skeleton, ctx, color, w, h) {
@@ -111,6 +111,8 @@ function renderSkeletonAvatar(skeleton, ctx, color, w, h) {
     ctx.lineWidth = 3;
     ctx.beginPath();
     var cv = skeleton.joint('head',w,h);
+    ctx.arc(cv[0], cv[1], 30, 0, 2*Math.PI);
+    cv = skeleton.joint('neck',w,h);
     ctx.moveTo(cv[0], cv[1]);
     cv = skeleton.joint('hips',w,h);
     ctx.lineTo(cv[0], cv[1]);             // Draw neck and body
@@ -133,12 +135,54 @@ function renderSkeletonAvatar(skeleton, ctx, color, w, h) {
     ctx.stroke();
 }
 function renderImageAvatar(skeleton, ctx, color, w, h) {
-    renderSkeletonAvatar(skeleton, ctx, color, w, h);
-    // FIXME
+    var starts = ['hips', 'hips',          'neck', 'lefthand', 'leftshoulder', 'rightshoulder'];
+    var ends =   ['leftfoot', 'rightfoot', 'hips', 'leftshoulder', 'rightshoulder', 'righthand'];
+    var widths = [13, 13, 33, 10, 7, 10];
+    var colors = ['#2266ff', '#2266ff', '#ff3300', '#ff3300', '#ff3300', '#ff3300'];
+    var cv = skeleton.joint('head',w,h);
+    ctx.beginPath();
+    ctx.strokeStyle = '#e5b887';
+    ctx.fillStyle = '#e5b887';
+    ctx.arc(cv[0], cv[1], 30, 0, 2*Math.PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = '#a57257';
+    ctx.fillStyle = '#a57257';
+    var v = [skeleton.joint('head', w, h)[0] - skeleton.joint('hips', w, h)[0],
+             skeleton.joint('head', w, h)[1] - skeleton.joint('hips', w, h)[1]];
+    var off = Math.atan2(v[1], v[0])+ Math.PI/2;
+    ctx.arc(cv[0], cv[1], 30, off + Math.PI*21/20, off + Math.PI*39/20);
+    ctx.stroke();
+    ctx.lineWidth = 3;
+    for (var i = 0; i < starts.length; ++i) {
+        ctx.strokeStyle = colors[i];
+        ctx.fillStyle = colors[i];
+        var cv1 = skeleton.joint(starts[i],w,h);
+        var cv2 = skeleton.joint(ends[i],w,h);
+        if (ends[i] == 'leftfoot') ovalfrom(ctx, cv1[0]+8, cv1[1]-24, cv2[0], cv2[1], widths[i]);
+        else if (ends[i] == 'rightfoot') ovalfrom(ctx, cv1[0]-8, cv1[1]-24, cv2[0], cv2[1], widths[i]);
+        else ovalfrom(ctx, cv1[0], cv1[1], cv2[0], cv2[1], widths[i]);
+    }
 }
 function renderSilhouetteAvatar(skeleton, ctx, color, w, h) {
-    renderSkeletonAvatar(skeleton, ctx, color, w, h);
-    // FIXME
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 3;
+    var starts = ['neck', 'hips', 'hips',          'lefthand', 'leftshoulder', 'rightshoulder'];
+    var ends =   ['hips', 'leftfoot', 'rightfoot', 'leftshoulder', 'rightshoulder', 'righthand'];
+    var widths = [33, 13, 13, 10, 7, 10];
+    ctx.beginPath();
+    var cv = skeleton.joint('head',w,h);
+    ctx.arc(cv[0], cv[1], 30, 0, 2*Math.PI);
+    ctx.fill();
+    for (var i = 0; i < starts.length; ++i) {
+        var cv1 = skeleton.joint(starts[i],w,h);
+        var cv2 = skeleton.joint(ends[i],w,h);
+        if (ends[i] == 'leftfoot') ovalfrom(ctx, cv1[0]+8, cv1[1]-24, cv2[0], cv2[1], widths[i]);
+        else if (ends[i] == 'rightfoot') ovalfrom(ctx, cv1[0]-8, cv1[1]-24, cv2[0], cv2[1], widths[i]);
+        else ovalfrom(ctx, cv1[0], cv1[1], cv2[0], cv2[1], widths[i]);
+    }
 }
 
 function renderPolygonsAvatar(skeleton, ctx, color, w, h) {
