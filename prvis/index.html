@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pagerank Visualizer</title>
+    <link rel="stylesheet" href="css/d3vis.css">
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/smoothness/jquery-ui.css">
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="js/colorbrewer.js"></script>
+    <script src="js/generategraph.js"></script>
+    <script src="js/pagerank.js"></script>
+    <script src="js/d3graphmanager.js"></script>
+    <script src="js/d3mouse.js"></script>
+    <script src="js/d3vis.js"></script>
+    <script type='text/javascript'>
+        $(document).ready(function() {
+            var w = $(window).width()*0.7;
+            var h = $(window).height()*0.95;
+            var svg;
+            var container = d3.select('#content')
+              .append('svg')
+              .attr('id', 'svg_area')
+              .attr('width', w)
+              .attr('height', h);
+
+            svg = container.append('svg:g')
+              .attr('width', w)
+              .attr('height', h);
+            
+            var nodes = [
+                    {id: 0, size: 40},
+                    {id: 1, size: 40},
+                    {id: 2, size: 40},
+                    {id: 3, size: 40}
+            ];
+            var edges = [
+                    {source: nodes[0], target: nodes[1]},
+                    {source: nodes[1], target: nodes[0]},
+                    {source: nodes[1], target: nodes[2]},
+                    {source: nodes[2], target: nodes[3]},
+                    {source: nodes[3], target: nodes[2]}
+            ];
+            r = Renderer(svg, nodes, edges);
+            var prm = null;
+            // Initialize slider for alpha
+            $('#alphaslider').slider({
+                min:0,
+                max:1,
+                value:0.2,
+                step: 0.05,
+                slide:function(ev,ui) {
+                    if (prm) {
+                        prm.updateAlpha(ui.value);
+                        if (!prm.isRunning()) {
+                            prm.init();
+                            prm.converge();
+                        }
+                    }
+                    $('#alphatext').html(ui.value);
+                }
+            });
+            $('#alphatext').html($('#alphaslider').slider('value'));
+            // Initialize slider for update rate
+            $('#intervalslider').slider({
+                min:0.5,
+                max:3,
+                value:1.5,
+                step:0.5,
+                slide:function(ev,ui) {
+                    if (prm) prm.updateIterRate(1000/ui.value);
+                    $('#intervaltext').html(ui.value);
+                }
+            });
+            $('#intervaltext').html($('#intervalslider').slider('value'));
+            prm = Pagerank(svg, r, $('#alphaslider').slider('value'), 1000/$('#intervalslider').slider('value'));
+
+            // Buttons update pageranks
+            $('#animate').button();
+            d3.select('#animate').on('click', function() {
+                prm.init(r.getGraphManager().getNode(0));
+                prm.animate();
+            });
+            $('#equalanimate').button();
+            d3.select('#equalanimate').on('click', function() {
+                prm.init();
+                prm.animate();
+            });
+            $('#generate').button();
+            d3.select('#generate').on('click', function() {
+                var n = parseInt($('#numnodes').val());
+                if (n < 2) n = 10;
+                if (n > 9999) n = 9999;
+                var g = GenerateGraph(n);
+                r.cleanup();
+                svg.remove();
+                svg = container.append('svg:g')
+                  .attr('width', w)
+                  .attr('height', h);
+                r = Renderer(svg, g);
+                prm = Pagerank(svg, r, $('#alphaslider').slider('value'), 1000/$('#intervalslider').slider('value'));
+                prm.init();
+                prm.converge();
+                r.getEventManager().setPageRankManager(prm);
+            });
+
+
+            prm.init();
+            prm.converge();
+            r.getEventManager().setPageRankManager(prm);
+
+            $('#animatetypes').buttonset();
+            $('#menu input[type=radio]').change(function() {
+                    var newval = $('#menu input[type=radio]:checked').val();
+                    if (newval == 'color') {
+                        prm.useSize(false);
+                        prm.useColors(true);
+                    }
+                    else if (newval == 'size') {
+                        prm.useSize(true);
+                        prm.useColors(false);
+                    }
+            });
+
+        });
+    </script>
+  </head>
+  
+  <body>
+        <div id='menu'>
+            <h1>Interactive Pagerank Visualizer</h1>
+            <h3>Edward Zhang</h3>
+            <hr>
+            Create a random graph with <input id='numnodes' size='3' maxlength='4' value='10'> nodes:
+            <button id='generate'>Generate Graph</button>
+            <h3>Editing the graph</h3>
+            <ul>
+                <!--<li>The graph will automatically resize and update pagerank values when you update it.</li>-->
+                <li>If a node is too small, hover over it to display the pagerank value</li>
+                <li>To add a node, double click anywhere away from an existing node or edge.</li>
+                <li>To add an edge, click and drag from the source node to the destination node.</li>
+                <li>To delete an edge or node, click on the edge or node and press "Delete" or "Backspace"</li>
+                <li>To reposition a node, alt-click the node and drag to its new position</li>
+            </ul>
+            <hr>
+            <button id='animate'>     Animate: Single Node with Pagerank</button>
+            <button id='equalanimate'>Animate: Uniform Distribution</button>
+            <br>
+            Iterations per second: <span id='intervaltext'></span> <div id='intervalslider'></div>
+            <hr>
+            Alpha: <span id='alphatext'></span> <div id='alphaslider'></div>
+            <p>
+            Display PageRank via:
+            <div id='animatetypes'>
+                <input type='radio' name='animatetype' id='animatetypecolor' value='color'><label for='animatetypecolor'>Color</label>
+                <input type='radio' name='animatetype' id='animatetypesize' value='size' checked><label for='animatetypesize'>Size</label>
+            </div>
+        </div>
+        <div id='content'>
+        </div>
+      
+  </body>
+
+</html>

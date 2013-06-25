@@ -1,0 +1,40 @@
+.edge {
+    transform-origin: 0% 100%;
+    -moz-transform-origin: 0% 100%;
+    -webkit-transform-origin: 0% 100%;
+    -khtml-transform-origin: 0% 100%;
+    -o-transform-origin: 0% 100%;
+    width: 0px
+
+    border-style: solid;
+    font-size: 0px; line-height: 0%; width: 0px;
+    border-top: 6px;
+    border-top-color: transparent;
+    border-bottom: 6px;
+    border-bottom-color: transparent;
+    border-left: 0px;
+    border-left-color: #888888;
+    border-right: 0px;
+}
+
+.node {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    display: block;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -o-user-select: none;
+    -webkit-user-select: none;
+
+    /*line-height: 50px;*/
+    text-align: center;
+    white-space: nowrap;
+    color: #000;
+    background: #f00;
+    z-index: 5;
+    overflow: hidden;
+
+    opacity: 0;
+    filter: alpha(opacity=0);
+}

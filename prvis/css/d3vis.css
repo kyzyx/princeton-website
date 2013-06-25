@@ -1,0 +1,89 @@
+svg {
+  background-color: #FFF;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+svg:not(.active):not(.ctrl) {
+  cursor: crosshair;
+}
+
+polygon.edge {
+  fill: #999;
+  stroke: #000;
+  stroke-width: 1px;
+  cursor: default;
+}
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+svg:not(.active):not(.ctrl) polygon.edge {
+  cursor: pointer;
+}
+
+polygon.edge.selected {
+    fill: #ddd;
+}
+
+polygon.edge.dragline {
+  pointer-events: none;
+}
+
+polygon.edge.hidden {
+  stroke-width: 0;
+  fill: none;
+}
+
+circle.node {
+  stroke-width: 1.5px;
+  cursor: pointer;
+  z-index:1;
+}
+
+circle.carrier {
+    opacity: 0.3;
+    z-index:-1;
+}
+circle.hidden {
+    stroke-width: 0;
+    fill: none;
+}
+
+text {
+  pointer-events: none;
+}
+
+text.id {
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+#menu {
+    display: block;
+    position: absolute;
+    width: 20%;
+    height: 95%;
+    background: #faa;
+    z-index: 10;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #000;
+    padding: 12px;
+}
+#menu h1 {
+    margin:1px;
+}
+#content {
+    display: block;
+    position: relative;
+    left: 22%;
+    width: 76%;
+    height: 95%;
+}
+
