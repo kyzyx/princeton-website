@@ -18,7 +18,7 @@
         <h1> Kinect v2 SDK C++ - 1. Kinect Basics </h1>
         <p>
         <b>Goals:</b> Learn how to initialize a Kinect and get RGB data from it. <br>
-        <b>Source:</b> <a href='https://github.com/kyzyx/Tutorials/tree/master/KinectSDK/1_Basics'>View Source</a> &nbsp;&nbsp;&nbsp;&nbsp; <b>Download:</b> <a href='1_Basics.zip'>1_Basics.zip</a>
+        <b>Source:</b> <a href='https://github.com/kyzyx/Tutorials/tree/master/Kinect2SDK/1_Basics'>View Source</a> &nbsp;&nbsp;&nbsp;&nbsp; <b>Download:</b> <a href='1_Basics.zip'>1_Basics.zip</a>
 
         <hr>
         <h2>Overview</h2>
@@ -36,8 +36,7 @@
         <hr>
         <h2><a name='includes'>Includes, Constants, and Globals</a></h2>
         <h3> Includes </h3>
-        <p> Mostly self explanatory. There are three header files for most
-        Kinect uses, NuiApi, NuiImageCamera, and NuiSensor.
+        <p> Mostly self explanatory: Kinect.h is the main Kinect header.
         <p>You need to include Ole2.h and Windows.h for
         the Kinect includes to work correctly. Don't forget to include the
         relevant code for your windowing system and OpenGL.
@@ -50,9 +49,7 @@
 #include &lt;gl/GLU.h&gt;
 #include &lt;gl/glut.h&gt;
 
-#include &lt;NuiApi.h&gt;
-#include &lt;NuiImageCamera.h&gt;
-#include &lt;NuiSensor.h&gt;
+#include &lt;Kinect.h&gt;
         </pre></td><td>
         <pre class="prettyprint">
 #include &lt;Windows.h&gt;
@@ -61,28 +58,26 @@
 #include &lt;SDL_opengl.h&gt;
 #include &lt;SDL.h&gt;
 
-#include &lt;NuiApi.h&gt;
-#include &lt;NuiImageCamera.h&gt;
-#include &lt;NuiSensor.h&gt;
+#include &lt;Kinect.h&gt;
         </pre></td></tr></table>
 
         <h3> Constants and Global Variables </h3>
         We define the width and height
-        as 640*480, since these are the Kinect camera input dimensions.
+        as 1920*1080, since these are the Kinect color camera input dimensions.
         <p> Note that the data array will hold a copy of the image we get
         from the Kinect, so that we can use it as a texture. Experienced
         OpenGL users may want to use a Frame Buffer Object instead.
         <pre class="prettyprint">
-#define width 640
-#define height 480
+#define width 1920
+#define height 1080
 
 // OpenGL Variables
 GLuint textureId;              // ID of the texture to contain Kinect RGB Data
 GLubyte data[width*height*4];  // BGRA array containing the texture data
 
 // Kinect variables
-HANDLE rgbStream;              // The identifier of the Kinect's RGB Camera
-INuiSensor* sensor;            // The kinect sensor
+IKinectSensor* sensor;         // Kinect sensor
+IColorFrameReader* reader;     // Kinect color data source
         </pre>
 
         <hr>
@@ -95,119 +90,90 @@ INuiSensor* sensor;            // The kinect sensor
         then we initialize it and prepare to read data from it. <p>
         <pre class="prettyprint">
 bool initKinect() {
-    // Get a working kinect sensor
-    int numSensors;
-    if (NuiGetSensorCount(&numSensors) < 0 || numSensors < 1) return false;
-    if (NuiCreateSensorByIndex(0, &sensor) < 0) return false;
+    if (FAILED(GetDefaultKinectSensor(&sensor))) {
+        return false;
+    }
+    if (sensor) {
+        sensor->Open();
 
-    // Initialize sensor
-    sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
-    sensor->NuiImageStreamOpen(
-        NUI_IMAGE_TYPE_COLOR,            // Depth camera or rgb camera?
-        NUI_IMAGE_RESOLUTION_640x480,    // Image resolution
-        0,      // Image stream flags, e.g. near mode
-        2,      // Number of frames to buffer
-        NULL,   // Event handle
-        &rgbStream);
-    return sensor;
+        IColorFrameSource* framesource = NULL;
+        sensor->get_ColorFrameSource(&framesource);
+        framesource->OpenReader(&reader);
+        if (framesource) {
+            framesource->Release();
+            framesource = NULL;
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
         </pre>
         Things to note:
         <ul>
             <li>Normally, we'd be a bit more careful about return values for
-            all of these functions, and also handle the case where there is
-            more than one Kinect sensor available; however, for brevity we will
-            just try to use the first connected kinect sensor. </li>
-            <li>The <code>NuiInitialize</code> method takes a bunch of flags
-            specifying which sensor features you are interested in. Right now,
-            we choose the color and depth camera inputs; there are also options
-            for audio input and skeleton input, among others. See the
-            <a href='http://msdn.microsoft.com/en-us/library/hh855368#NUI_INITIALIZE'>official API</a> for more details.</li>
-            <li>The <code>NuiImageStreamOpen()</code> method is a little
-            confusing. It initializes a <code>HANDLE</code> that we can later
-            use to get image frames. This function can be used either to set up
-            an RGB color image stream or a depth image stream (based on the
-            first argument). You can ignore the 3rd and 5th arguments for now.
-            Keep the resolution as 640x480 and the buffer size some single
-            digit number. The last argument is a pointer to the
-            <code>HANDLE</code> that we'll use to actually get image frames.
-            See the <a href='http://msdn.microsoft.com/en-us/library/nuiimagecamera.nuiimagestreamopen'>documentation</a> for more details.
-            </li>
-        </ul>
-        <h3> Getting an RGB frame from the Kinect </h3>
-        To actually get a frame from the sensor, we have to fetch it and lock it
-        so it doesn't get corrupted while we're reading it.
-        <pre class="prettyprint">
-void getKinectData(GLubyte* dest) {
-    NUI_IMAGE_FRAME imageFrame;
-    NUI_LOCKED_RECT LockedRect;
-    if (sensor->NuiImageStreamGetNextFrame(rgbStream, 0, &imageFrame) < 0) return;
-    INuiFrameTexture* texture = imageFrame.pFrameTexture;
-    texture->LockRect(0, &LockedRect, NULL, 0);
-        </pre>
-        There are three types in this short snippet:
-            <code>NUI_IMAGE_FRAME</code> is a structure containing all the
-            metadata about the frame - the number, resolution, etc.
-            <code>NUI_LOCKED_RECT</code> contains a pointer to the actual data.
-            An <code>INuiFrameTexture</code> manages the frame data.
-        So first we acquire a <code>NUI_IMAGE_FRAME</code> from the
-        <code>HANDLE</code> we initialized earlier. Then we get an
-        <code>INuiFrameTexture</code> so that we can get the pixel data out
-        of it, using a <code>NUI_LOCKED_RECT</code>.
-        <p>
-        Now, we can copy the data to our own memory location. The Pitch of the
-        LockedRect is how many bytes are in each row of the frame; a simple
-        check on that value makes sure that the frame is not empty.
-        <pre class="prettyprint">
-    if (LockedRect.Pitch != 0)
-    {
-        const BYTE* curr = (const BYTE*) LockedRect.pBits;
-        const BYTE* dataEnd = curr + (width*height)*4;
-
-        while (curr &lt; dataEnd) {
-            *dest++ = *curr++;
-        }
-    }
-        </pre>
-        The Kinect data is in BGRA format, so we can copy it directly
-        into our buffer and use it as an OpenGL texture.
-        <br>
-        Finally, we have to release the frame so that the Kinect can use it
-        again.
-        <pre class="prettyprint">
-    texture->UnlockRect(0);
-    sensor->NuiImageStreamReleaseFrame(rgbStream, &imageFrame);
-}
-        </pre>
-
-        Things to note:
-        <ul>
-            <li> Again, we aren't checking return codes on everything. You may
-            want to do this in your applications </li>
-            <li> If you're calling this update function too quickly, then
-            the Kinect might not have a new frame that you haven't seen yet. In
-            this case, <code>NuiImageStreamGetNextFrame()</code> will return a
-            negative value.
-            The second argument of <code>NuiImageStreamGetNextFrame()</code>
-            specifies how long to wait (in milliseconds) for a new frame before
-            returning failure.
-            </li>
-            <li> To reiterate, the workflow is as follows:
+            all of these functions; however, for brevity we will
+            omit some of them. </li>
+            <li>Note the general pattern of data stream requesting:
             <ol>
-            <li>Acquire a frame: <code>sensor->NuiImageStreamGetNextFrame()</code>.
-            The first parameter is the <code>HANDLE</code> we initialized
-            earlier, and the last is a pointer to a <code>NUI_IMAGE_FRAME</code>
-            struct that will contain the frame data. The second argument allows
-            you to wait for a frame if a new one is not ready (see above)</li>
-            <li>Lock the pixel data: <code>imageFrame.pFrameTexture->LockRect()</code>. All the arguments must be 0 or NULL except for the second, which is
-            a pointer to a <code>NUI_LOCKED_RECT</code> struct.</li>
-            <li>Copy the data (from <code>LockedRect.pBits</code>)</li>
-            <li>Unlock the pixel data: <code>imageFrame.pFrameTexture->UnlockRect()</code>. Argument must be 0</li>
-            <li>Release the frame: <code>sensor->NuiImageStreamReleaseFrame()</code>. First argument is the image stream <code>HANDLE</code>, second is a
-            pointer to the image frame that we are releasing</li>
+                <li>Make a framesource of the appropriate type (Color, Depth, Body, etc.)</li>
+                <li>Request the framesource from the sensor interface</li>
+                <li>Open the reader from the framesource</li>
+                <li>The framesource can safely be released</li>
+                <li>Request data frames from the reader</li>
             </ol>
             </li>
         </ul>
+        <h3> Getting an RGB frame from the Kinect </h3>
+        <pre class="prettyprint">
+void getKinectData(GLubyte* dest) {
+    IColorFrame* frame = NULL;
+    if (SUCCEEDED(reader->AcquireLatestFrame(&frame))) {
+        frame->CopyConvertedFrameDataToArray(width*height*4, data, ColorImageFormat_Bgra);
+    }
+    if (frame) frame->Release();
+}
+        </pre>
+        This function is very simple. We poll for a frame from the data source,
+        and if one is available, we can copy it into our texture array in the
+        appropriate format. Don't forget to release the frame afterward!
+        <p>
+        Note that the raw color frame is probably in a YUV format or similar, so
+        the conversion to a usable RGB/BGR format does involve a bit of processing.
+        You can also access the raw data using <code>frame->AccessUnderlyingBuffer</code>,
+        which we will use in the depth tutorial.
+        <p>
+        Metadata about the frame can be accessed as well. Here's a list of some things
+        you might be interested in:
+    <ul>
+        <li>Camera settings, such as exposure and gain, can be accessed from an IColorCameraSettings
+        <pre class="prettyprint">
+    IColorCameraSettings* camerasettings;
+    frame->get_ColorCameraSettings(&camerasettings);
+    float gain;
+    TIMESPAN exposure;
+    camerasettings->get_Gain(&gain);
+    camerasettings->get_ExposureTime(&exposure);
+    // ...etc.
+        </pre>
+        </li>
+        <li>Dimensions and field of view can be accessed from an IFrameDescription:
+        <pre class="prettyprint">
+    IFrameDescription* description;
+    frame->get_FrameDescription(&description);
+    int height, width;
+    float xfov, yfov;
+    description->get_Height(&height);
+    description->get_Width(&width);
+    description->get_HorizontalFieldOfView(&xfov);
+    description->get_VerticalFieldOfView(&yfov);
+    // ...etc.
+        </pre>
+        This also applies to Depth and IR frames.
+        </li>
+    </ul>
+        See <a href='https://msdn.microsoft.com/en-us/library/microsoft.kinect.kinect.icolorframe.aspx'>https://msdn.microsoft.com/en-us/library/microsoft.kinect.kinect.icolorframe.aspx</a> for details.
+
         <br>
         That's all the Kinect code! The rest is just how to get it onscreen.
         <hr>

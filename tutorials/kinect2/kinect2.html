@@ -35,69 +35,66 @@
         <hr>
         <h2><a name='kinect'>Kinect Code</a></h2>
         <h3>Kinect Initialization</h3>
-        To get the depth data from the kinect, simply change the arguments
-        to <code>NuiImageStreamOpen()</code>. The first argument is now
-        <code>NUI_IMAGE_TYPE_DEPTH</code>, telling the Kinect that we now
-        want depth images instead of RGB images. (For clarity we also changed
-        the name of the Handle to reflect this)
-        <p>
-        When you're using the Kinect for Windows sensor (as opposed to the XBox
-        Kinect) you can also enable Near Mode. Near Mode allows the Kinect to
-        be more sensitive to closer objects (say from 50cm to 200cm), whereas
-        without near mode it is sensitive from 80cm to 400cm. <p>
-        To enable near mode, pass in the flag <code>NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE</code> as the third argument.
+        To get the depth data from the kinect, simply change the types of the
+        framesource, framereader, and frame. Note also that the resolution of
+        the depth camera is different from that of the color camera: 512*424
+        instead of 1920*1080.
         <pre class="prettyprint">
-// NEW VARIABLE
-HANDLE depthStream;
+IDepthFrameReader* reader;     // Kinect depth data source
 
 bool initKinect() {
-    // Get a working kinect sensor
-    int numSensors;
-    if (NuiGetSensorCount(&numSensors) < 0 || numSensors < 1) return false;
-    if (NuiCreateSensorByIndex(0, &sensor) < 0) return false;
-
-    // Initialize sensor
-    sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
-
-        // --------------- START CHANGED CODE -----------------
-    sensor->NuiImageStreamOpen(
-        NUI_IMAGE_TYPE_DEPTH,                     // Depth camera or rgb camera?
-        NUI_IMAGE_RESOLUTION_640x480,             // Image resolution
-        NUI_IMAGE_STREAM_FLAG_ENABLE_NEAR_MODE,   // Image stream flags, e.g. near mode
-        2,      // Number of frames to buffer
-        NULL,   // Event handle
-        &depthStream);
-        // --------------- END CHANGED CODE -----------------
-    return sensor;
+    if (FAILED(GetDefaultKinectSensor(&sensor))) {
+        return false;
+    }
+    if (sensor) {
+        sensor->Open();
+        IDepthFrameSource* framesource = NULL;
+        sensor->get_DepthFrameSource(&framesource);
+        framesource->OpenReader(&reader);
+        if (framesource) {
+            framesource->Release();
+            framesource = NULL;
+        }
+        return true;
+    } else {
+        return false;
+    }
 }
         </pre>
-        For more information about near mode, see <a href="http://blogs.msdn.com/b/kinectforwindows/archive/2012/01/20/near-mode-what-it-is-and-isn-t.aspx">this official blog post</a>.
         <h3> Getting a depth frame from the Kinect </h3>
         We'll display the depth image from the kinect in grayscale. Each pixel
         will just be the pixel's distance from the kinect (in millimeters) mod
         256.<p>
-        The only thing to note here is the <code>NuiDepthPixelToDepth</code>
-        function - each pixel in the actual depth map has both depth information
-        and player information (i.e. which player can be associated with that
-        pixel). Calling this function returns the depth in millimeters at that
-        pixel.
-        <p> The depth data is 16 bits, so we use a USHORT to read it in.
         <pre class="prettyprint">
-        const USHORT* curr = (const USHORT*) LockedRect.pBits;
-        const USHORT* dataEnd = curr + (width*height);
+void getKinectData(GLubyte* dest) {
+    IDepthFrame* frame = NULL;
+    if (SUCCEEDED(reader->AcquireLatestFrame(&frame))) {
+        unsigned int sz;
+        unsigned short* buf;
+        frame->AccessUnderlyingBuffer(&sz, &buf);
+
+        const unsigned short* curr = (const unsigned short*)buf;
+        const unsigned short* dataEnd = curr + (width*height);
 
         while (curr < dataEnd) {
             // Get depth in millimeters
-            USHORT depth = NuiDepthPixelToDepth(*curr++);
+            unsigned short depth = (*curr++);
 
             // Draw a grayscale image of the depth:
             // B,G,R are all set to depth%256, alpha set to 1.
             for (int i = 0; i < 3; ++i)
-                *dest++ = (BYTE) depth%256;
+                *dest++ = (BYTE)depth % 256;
             *dest++ = 0xff;
         }
-
+    }
+    if (frame) frame->Release();
+}
         </pre>
+        Note that, unlike with the color frame, we just want to access the raw
+        data from the frame. To do this, we use <code>frame->AccessUnderlyingBuffer</code>
+        to get a pointer to the data.
+        <br>
+        Then we convert the depth data and write it to our image array.
         <br>
         That's all the Kinect code! The rest is just how to get it onscreen.
         <hr>

@@ -94,9 +94,9 @@
         <p>
         <b>Right-click the Kinect Property Sheet and click Properties.
             <ul>
-                <li>Under C/C++ > Additional Include Directories, add "$(KINECTSDK10_DIR)/include". </li>
-                <li>Under Linker > Additional Library Directories, add "$(KINECTSDK10_DIR)/lib/x64" (or /x86 for 32-bit systems). </li>
-                <li>Under Linker > Input > Additional Dependencies, add "kinect10.lib". </li>
+                <li>Under C/C++ > Additional Include Directories, add "$(KINECTSDK20_DIR)/include". </li>
+                <li>Under Linker > Additional Library Directories, add "$(KINECTSDK20_DIR)/lib/x64" (or /x86 for 32-bit systems). </li>
+                <li>Under Linker > Input > Additional Dependencies, add "kinect20.lib". </li>
             </ul>
         </b>
         Note that to add Include and Library Directories, you can either just
@@ -104,7 +104,7 @@
         and enter the location in the resulting dialog. This method lets you
         manage multiple directories easily, as well as lets you browse for the
         exact directory (if you don't use environment variables like
-        KINECTSDK10_DIR)
+        KINECTSDK20_DIR)
         </p>
         <p>
         <b>Right-click the OpenGL Property Sheet and click Properties. Under Linker > Input > Additional Dependencies, add the following:
