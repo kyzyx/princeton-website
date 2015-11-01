@@ -215,7 +215,26 @@ void getRgbData(GLubyte* dest) {
         array buffers are stored on the GPU so displaying them is more efficient. They do make the code a bit more complicated, though.
         Want to skip the array buffers? Go <a href="#noarraybuffers">here</a>.
         <p>
+        To use array buffers, we have to deal with OpenGL extensions. To make this
+        easier, we use GLEW.
+        <h3> Installing GLEW </h3>
+        <ol>
+            <li>Download and unzip the GLEW binaries from <a href='http://glew.sourceforge.net/'>http://glew.sourceforge.net/</a></li>
+            <li>Copy the contents of the Include/ and Lib/ directories you just
+            unzipped into the appropriate Windows SDK directories. e.g.
+                <ul>
+                    <li> C:/Program Files/Microsoft SDKs/Windows/v7.0A/Include/ and
+                    C:/Program Files/Microsoft SDKs/Windows/v7.0A/Lib/ for Visual Studio 2010 </li>
+                    <li>C:/Program Files/Windows Kits (x86)/8.1/Include/um/ and
+                    C:/Program Files (x86)/Windows Kits/8.1/Lib/winv6.3/um/ for Visual Studio 2012+</li>
+                </ul>
+            </li>
+            <li>Copy bin/x64/glew32.dll into C:/Windows/System32 and bin/x86/glew32.dll into C:/Windows/SysWOW64. If
+            you have a 32-bit system, just move bin/x86/glew32.dll into C:/Windows/System32</li>
+        </ol>
+        Add glew32.lib to the SDL or OpenGL property sheet's Linker > Input > Additional Dependencies.
 
+        <h3>OpenGL Code</h3>
         Since we're dealing with 3D data, we now also have to worry about
         camera settings. We use a <code>gluPerspective</code> and <code>gluLookAt</code> to deal with that for us.
         <pre class="prettyprint">
