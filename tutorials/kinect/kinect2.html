@@ -15,7 +15,19 @@
         </ul>
     </div>
     <div id='content'>
-        <h1> Kinect SDK C++ - 2. Kinect Depth Data </h1>
+        <h1> Kinect v1 SDK C++ - 2. Kinect Depth Data </h1>
+        <div class="boxedmessage">
+            <table>
+                <tr>
+                    <td width=20%>
+                        <img src="images/kinectv2.jpg" width=100% style="float:left"/>
+                    </td>
+                    <td width=80%>
+                        <b>Have a Kinect v2?</b> Head over to the <a href="../kinect2/kinect2.html">Kinect v2 Tutorial 2</a>. This tutorial is for the v1 Kinect SDK.
+                    </td>
+                </tr>
+            </table>
+        </div>
         <p>
         <b>Goals:</b> Learn how to get depth data from a kinect and what
         the format of the data is. <br>
@@ -81,7 +93,7 @@ bool initKinect() {
         and player information (i.e. which player can be associated with that
         pixel). Calling this function returns the depth in millimeters at that
         pixel.
-        <p> The depth data is 16 bits, so we use a USHORT to read it in. 
+        <p> The depth data is 16 bits, so we use a USHORT to read it in.
         <pre class="prettyprint">
         const USHORT* curr = (const USHORT*) LockedRect.pBits;
         const USHORT* dataEnd = curr + (width*height);
@@ -114,9 +126,9 @@ bool initKinect() {
         You should see a window containing a video stream of what your Kinect
         sees, in grayscale.
         <hr>
-<table width="100%"><tr><td> 
+<table width="100%"><tr><td>
         <a href='kinect1.html'>Previous: Basics</a>
-</td><td> 
+</td><td>
         <p align="right">
         <a href='kinect3.html'>Next: Kinect Point Cloud</a>
         </p>

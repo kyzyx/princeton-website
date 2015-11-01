@@ -15,7 +15,19 @@
         </ul>
     </div>
     <div id='content'>
-        <h1> Kinect SDK C++ - 1. Kinect Basics </h1>
+        <h1> Kinect v1 SDK C++ - 1. Kinect Basics </h1>
+        <div class="boxedmessage">
+            <table>
+                <tr>
+                    <td width=20%>
+                        <img src="images/kinectv2.jpg" width=100% style="float:left"/>
+                    </td>
+                    <td width=80%>
+                        <b>Have a Kinect v2?</b> Head over to the <a href="../kinect2/kinect1.html">Kinect v2 Tutorial 1</a>. This tutorial is for the v1 Kinect SDK.
+                    </td>
+                </tr>
+            </table>
+        </div>
         <p>
         <b>Goals:</b> Learn how to initialize a Kinect and get RGB data from it. <br>
         <b>Source:</b> <a href='https://github.com/kyzyx/Tutorials/tree/master/KinectSDK/1_Basics'>View Source</a> &nbsp;&nbsp;&nbsp;&nbsp; <b>Download:</b> <a href='1_Basics.zip'>1_Basics.zip</a>
@@ -24,7 +36,7 @@
         <h2>Overview</h2>
         We have two real pieces of Kinect-specific code. I will go over these
         in some detail, and give a fairly high level overview of the display
-        code. 
+        code.
         <br>
         <h3>Contents</h3>
         <ol>
@@ -37,7 +49,7 @@
         <h2><a name='includes'>Includes, Constants, and Globals</a></h2>
         <h3> Includes </h3>
         <p> Mostly self explanatory. There are three header files for most
-        Kinect uses, NuiApi, NuiImageCamera, and NuiSensor. 
+        Kinect uses, NuiApi, NuiImageCamera, and NuiSensor.
         <p>You need to include Ole2.h and Windows.h for
         the Kinect includes to work correctly. Don't forget to include the
         relevant code for your windowing system and OpenGL.
@@ -68,10 +80,10 @@
 
         <h3> Constants and Global Variables </h3>
         We define the width and height
-        as 640*480, since these are the Kinect camera input dimensions. 
+        as 640*480, since these are the Kinect camera input dimensions.
         <p> Note that the data array will hold a copy of the image we get
-        from the Kinect, so that we can use it as a texture. Experienced 
-        OpenGL users may want to use a Frame Buffer Object instead. 
+        from the Kinect, so that we can use it as a texture. Experienced
+        OpenGL users may want to use a Frame Buffer Object instead.
         <pre class="prettyprint">
 #define width 640
 #define height 480
@@ -89,7 +101,7 @@ INuiSensor* sensor;            // The kinect sensor
         <h2><a name='kinect'>Kinect Code</a></h2>
         <h3>Kinect Initialization</h3>
 
-        This is our first real Kinect-specific code. The 
+        This is our first real Kinect-specific code. The
         <code>initKinect()</code> function initializes a Kinect sensor for use.
         This consists of two parts: First we find an attached Kinect sensor,
         then we initialize it and prepare to read data from it. <p>
@@ -114,29 +126,29 @@ bool initKinect() {
         </pre>
         Things to note:
         <ul>
-            <li>Normally, we'd be a bit more careful about return values for 
-            all of these functions, and also handle the case where there is 
+            <li>Normally, we'd be a bit more careful about return values for
+            all of these functions, and also handle the case where there is
             more than one Kinect sensor available; however, for brevity we will
             just try to use the first connected kinect sensor. </li>
             <li>The <code>NuiInitialize</code> method takes a bunch of flags
             specifying which sensor features you are interested in. Right now,
             we choose the color and depth camera inputs; there are also options
-            for audio input and skeleton input, among others. See the 
+            for audio input and skeleton input, among others. See the
             <a href='http://msdn.microsoft.com/en-us/library/hh855368#NUI_INITIALIZE'>official API</a> for more details.</li>
             <li>The <code>NuiImageStreamOpen()</code> method is a little
             confusing. It initializes a <code>HANDLE</code> that we can later
             use to get image frames. This function can be used either to set up
-            an RGB color image stream or a depth image stream (based on the 
-            first argument). You can ignore the 3rd and 5th arguments for now. 
+            an RGB color image stream or a depth image stream (based on the
+            first argument). You can ignore the 3rd and 5th arguments for now.
             Keep the resolution as 640x480 and the buffer size some single
-            digit number. The last argument is a pointer to the 
-            <code>HANDLE</code> that we'll use to actually get image frames. 
+            digit number. The last argument is a pointer to the
+            <code>HANDLE</code> that we'll use to actually get image frames.
             See the <a href='http://msdn.microsoft.com/en-us/library/nuiimagecamera.nuiimagestreamopen'>documentation</a> for more details.
             </li>
         </ul>
         <h3> Getting an RGB frame from the Kinect </h3>
         To actually get a frame from the sensor, we have to fetch it and lock it
-        so it doesn't get corrupted while we're reading it. 
+        so it doesn't get corrupted while we're reading it.
         <pre class="prettyprint">
 void getKinectData(GLubyte* dest) {
     NUI_IMAGE_FRAME imageFrame;
@@ -157,7 +169,7 @@ void getKinectData(GLubyte* dest) {
         <p>
         Now, we can copy the data to our own memory location. The Pitch of the
         LockedRect is how many bytes are in each row of the frame; a simple
-        check on that value makes sure that the frame is not empty. 
+        check on that value makes sure that the frame is not empty.
         <pre class="prettyprint">
     if (LockedRect.Pitch != 0)
     {
@@ -170,7 +182,7 @@ void getKinectData(GLubyte* dest) {
     }
         </pre>
         The Kinect data is in BGRA format, so we can copy it directly
-        into our buffer and use it as an OpenGL texture. 
+        into our buffer and use it as an OpenGL texture.
         <br>
         Finally, we have to release the frame so that the Kinect can use it
         again.
@@ -187,17 +199,17 @@ void getKinectData(GLubyte* dest) {
             <li> If you're calling this update function too quickly, then
             the Kinect might not have a new frame that you haven't seen yet. In
             this case, <code>NuiImageStreamGetNextFrame()</code> will return a
-            negative value. 
+            negative value.
             The second argument of <code>NuiImageStreamGetNextFrame()</code>
             specifies how long to wait (in milliseconds) for a new frame before
             returning failure.
             </li>
             <li> To reiterate, the workflow is as follows:
             <ol>
-            <li>Acquire a frame: <code>sensor->NuiImageStreamGetNextFrame()</code>. 
-            The first parameter is the <code>HANDLE</code> we initialized 
+            <li>Acquire a frame: <code>sensor->NuiImageStreamGetNextFrame()</code>.
+            The first parameter is the <code>HANDLE</code> we initialized
             earlier, and the last is a pointer to a <code>NUI_IMAGE_FRAME</code>
-            struct that will contain the frame data. The second argument allows 
+            struct that will contain the frame data. The second argument allows
             you to wait for a frame if a new one is not ready (see above)</li>
             <li>Lock the pixel data: <code>imageFrame.pFrameTexture->LockRect()</code>. All the arguments must be 0 or NULL except for the second, which is
             a pointer to a <code>NUI_LOCKED_RECT</code> struct.</li>
@@ -224,13 +236,13 @@ void getKinectData(GLubyte* dest) {
         The main loop is started in the <code>execute()</code> function.
         In GLUT, the loop is handled behind the scenes, so all we need to
         do is call the <code>glutMainLoop()</code> function. In SDL we
-        write our own loop. Within each loop, we draw any new frames to 
+        write our own loop. Within each loop, we draw any new frames to
         the screen; this processing is done in the <code>drawKinect()</code>
         function.
         <p>
         There are many references online for both GLUT and SDL if you want
         to do more complex window and loop management or learn more about
-        these functions. 
+        these functions.
 <h4>GLUT</h4>
         <pre class="prettyprint">
 void draw() {
@@ -273,14 +285,14 @@ bool init(int argc, char* argv[]) {
     return screen;
 }
         </pre>
-        <hr>    
+        <hr>
         <h2><a name='opengl'>Display via OpenGL</a></h2>
         <h3>Initialization</h3>
-        
+
         Three steps, as described in the code - Setting up the texture to
         contain our image frame, preparing OpenGL for drawing our texture,
         and setting up a camera viewpoint (using an orthographic projection
-        for 2D images). 
+        for 2D images).
         <pre class="prettyprint">
     // Initialize textures
     glGenTextures(1, &textureId);
@@ -305,12 +317,12 @@ bool init(int argc, char* argv[]) {
     glLoadIdentity();
         </pre>
         Obviously, we should wrap this up in a function. I just put it into
-        <code>main()</code> for brevity. 
+        <code>main()</code> for brevity.
         <pre class="prettyprint">
 int main(int argc, char* argv[]) {
     if (!init(argc, argv)) return 1;
     if (!initKinect()) return 1;
-    
+
     /* ...OpenGL texture and camera initialization... */
 
     // Main loop
@@ -327,7 +339,7 @@ void drawKinectData() {
     getKinectData(data);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, (GLvoid*)data);
         </pre>
-        Then, we draw a rectangle that is textured with our frame. 
+        Then, we draw a rectangle that is textured with our frame.
         <pre class="prettyprint">
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBegin(GL_QUADS);
@@ -347,9 +359,9 @@ void drawKinectData() {
         You should see a window containing a video stream of what your Kinect
         sees.
         <hr>
-<table width="100%"><tr><td> 
+<table width="100%"><tr><td>
         <a href='kinect0.html'>Previous: Setup</a>
-</td><td> 
+</td><td>
         <p align="right">
         <a href='kinect2.html'>Next: Kinect Depth Data (Coming Soon)</a>
         </p>

@@ -21,7 +21,19 @@
         </ul>
     </div>
     <div id='content'>
-        <h1> Kinect SDK C++ - 0. Setup </h1>
+        <h1> Kinect v1 SDK C++ - 0. Setup </h1>
+        <div class="boxedmessage">
+            <table>
+                <tr>
+                    <td width=20%>
+                        <img src="images/kinectv2.jpg" width=100% style="float:left"/>
+                    </td>
+                    <td width=80%>
+                        <b>Have a Kinect v2?</b> Head over to the <a href="../kinect2/kinect0.html">Kinect v2 Tutorial 0</a>. This tutorial is for the v1 Kinect SDK.
+                    </td>
+                </tr>
+            </table>
+        </div>
         This series of tutorials is intended for C++ programmers who want to use Microsoft's Kinect SDK.
         There will be as little Windows code as possible. We will be using OpenGL for graphics.
         <p>
@@ -57,8 +69,8 @@
         </ol>
         If you are developing for a 64-bit system, then instead work with bin/x64/freeglut.dll instead.
         <h2> Creating a Kinect Project </h2>
-        <b>Open up Visual Studio and start a new Empty Project.</b> Click 
-        File > New > Project...; then select C++ > General > Empty Project. 
+        <b>Open up Visual Studio and start a new Empty Project.</b> Click
+        File > New > Project...; then select C++ > General > Empty Project.
         Name it appropriately. </p>
         <img src='images/0_0.jpg' class='screenshot'><br><br>
         To configure the build rules (i.e. includes and libs) we will use the Property Manager. This will
@@ -66,12 +78,12 @@
         <p>
         <b>Go to <u>View</u> > <u>Property Manager</u>. </b> This will open up
         a pane in one of the subwindows in Visual Studio containing build
-        rules. 
+        rules.
         </p><img src='images/0_1.jpg' class='screenshot'>
         <p>
         <b>In the Property Manager, right click on the project name and select <u>Add New Project Property Sheet</u>; name it "OpenGL". Create another one named "KinectSDK"</b>.
-        You should see several new items appear under "Debug" and "Release" 
-        with the names of your new Property Sheets. Property Sheets are files 
+        You should see several new items appear under "Debug" and "Release"
+        with the names of your new Property Sheets. Property Sheets are files
         (extension .props) that contain build configuration data. For
         modularity, we will create one for our OpenGL info and one for our
         Kinect SDK info.
