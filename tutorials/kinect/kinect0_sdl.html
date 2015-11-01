@@ -69,7 +69,7 @@
             C:\SDL-1.2.15\lib\x86 (or the equivalent) and copy SDL.dll. Paste
             it into C:\Windows\SysWOW64 if that folder exists (i.e. you have
             a 64-bit version of Windows). Otherwise, paste it into
-            C:\Windows\system32</li>
+            C:\Windows\System32</li>
             <li> <b>Add the SDL folder as an environment variable.</b>
                 Open up the start menu, right click Computer, and select
                 Properties. Click "Advanced System Settings" on the left
@@ -106,8 +106,8 @@
         <p>
         <b>Right-click the Kinect Property Sheet and click Properties.
             <ul>
-                <li>Under C/C++ > Additional Include Directories, add "$(KINECTSDK10_DIR)\include". </li>
-                <li>Under Linker > Additional Library Directories, add "$(KINECTSDK10_DIR)\lib\x86". </li>
+                <li>Under C/C++ > Additional Include Directories, add "$(KINECTSDK10_DIR)/include". </li>
+                <li>Under Linker > Additional Library Directories, add "$(KINECTSDK10_DIR)/lib/x64" (or /x86 for 32-bit systems). </li>
                 <li>Under Linker > Input > Additional Dependencies, add "kinect10.lib". </li>
             </ul>
         </b>
