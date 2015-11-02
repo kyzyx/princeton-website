@@ -43,17 +43,18 @@
         <hr>
         <h2><a name='coordinates'>Depth and RGB Coordinate Systems</a></h2>
         <h3> Kinect Coordinate System </h3>
-        The Kinect uses a cartesian coordinate system centered at the Kinect. The positive Y axis points up,
-        the positive Z axis points where the Kinect is pointing, and the positive X axis is to the left.
+        The Kinect uses a cartesian coordinate system centered at the Kinect's IR sensor. The positive Y axis points up,
+        the positive Z axis points where the Kinect is pointing, and the positive X axis is to the left. One unit in this
+        coordinate system is equal to one meter.
         <br>
-        <img src="http://www.informatik.uni-augsburg.de/lehrstuehle/hcm/projects/tools/fubi/img/OpenNI_Coordinate_System_small.png">
+        <img src="https://i-msdn.sec.s-msft.com/dynimg/IC757720.png">
         <br>
         <h3>Alignment</h3>
         A naive way of making a point cloud might directly overlap the depth and color images, so that depth pixel (x,y) goes with image pixel (x,y).
         However, this would give you a poor quality depth map, where the borders of objects don't line up with the colors. This occurs because the RGB
         camera and the depth camera are located at different spots on the Kinect; obviously, then, they aren't seeing the same things! Normally, we'd
-        have to do some kind of alignment of the two cameras (the formal term is registration) to be able to map from one coordinate space to
-        the other. Fortunately Microsoft has already done this for us, so all we need to do is call the right functions.
+        have to do some kind of alignment of the two cameras (the formal term is registration) so that we know what color pixel goes with what
+        depth pixel. Fortunately Microsoft can already do this for us, so all we need to do is call the right functions.
         <table>
         <tr>
             <td><img width="100%" src="kinect3_unregistered.png"></td><td><img width="100%" src="kinect3_registered.png"></td>
@@ -66,135 +67,221 @@
         something like <a href="http://opencv.org/">OpenCV</a>.
         <hr>
         <h2><a name='kinect'>Kinect Code</a></h2>
-        A lot of this is just combining the code from the first two tutorials.
+        There are two new issues that we have to deal with, and correspondingly two
+        new interfaces:
+
+        <ul>
+            <li>
+            Up until now, we've only had to deal with a single data stream at a time.
+            However, now that we're using both color and depth data (and possibly other
+            types, such as IR or body-tracking data), we want to make sure that the
+            data we're processing is synchronized. Otherwise, the color image could show
+            one part of the scene while the depth data shows another!
+            <br>
+            Instead, we will use a <code>MultiSourceFrameReader</code>, which gives
+            <code>MultiSourceFrame</code>s.
+            </li>
+            <li>
+            To deal with the different coordinate systems mentioned above, the SDK
+            provides an object that will do all the conversion work for you:
+            <code>ICoordinateMapper</code>.
+            </li>
+        </ul>
         <h3>Kinect Initialization</h3>
-        There's nothing new in initialization. We simply need two image
-        streams, one for depth and one for color.
-        <p>
         <pre class="prettyprint">
-HANDLE rgbStream;
-HANDLE depthStream;
-INuiSensor* sensor;
+IKinectSensor* sensor;             // Kinect sensor
+IMultiSourceFrameReader* reader;   // Kinect data source
+ICoordinateMapper* mapper;         // Converts between depth, color, and 3d coordinates
 
 bool initKinect() {
-    // Get a working kinect sensor
-    int numSensors;
-    if (NuiGetSensorCount(&numSensors) < 0 || numSensors < 1) return false;
-    if (NuiCreateSensorByIndex(0, &sensor) < 0) return false;
+    if (FAILED(GetDefaultKinectSensor(&sensor))) {
+        return false;
+    }
+    if (sensor) {
+        sensor->get_CoordinateMapper(&mapper);
 
-    // Initialize sensor
-    sensor->NuiInitialize(NUI_INITIALIZE_FLAG_USES_DEPTH | NUI_INITIALIZE_FLAG_USES_COLOR);
-
-    sensor->NuiImageStreamOpen(
-        NUI_IMAGE_TYPE_DEPTH,                     // Depth camera or rgb camera?
-        NUI_IMAGE_RESOLUTION_640x480,             // Image resolution
-        0,      // Image stream flags, e.g. near mode
-        2,      // Number of frames to buffer
-        NULL,   // Event handle
-        &depthStream);
-    sensor->NuiImageStreamOpen(
-        NUI_IMAGE_TYPE_COLOR,                     // Depth camera or rgb camera?
-        NUI_IMAGE_RESOLUTION_640x480,             // Image resolution
-        0,      // Image stream flags, e.g. near mode
-        2,      // Number of frames to buffer
-        NULL,   // Event handle
-        &rgbStream);
-    return sensor;
+        sensor->Open();
+        sensor->OpenMultiSourceFrameReader(
+            FrameSourceTypes::FrameSourceTypes_Depth | FrameSourceTypes::FrameSourceTypes_Color,
+            &reader);
+        return reader;
+    } else {
+        return false;
+    }
 }
         </pre>
-        <h3> Getting depth data from the Kinect </h3>
-        The Kinect SDK provides a function that tells you which pixel in the
-        RGB image corresponds with a particular point in the depth image. We'll
-        store this information in another global array, <code>depthToRgbMap</code>.
-        In particular, we store the column and row (i.e. x and y coordinate)
-        of the color pixel in order for each depth pixel.
+        We open the <code>MultiSourceFrameReader</code> by specifying which
+        data we want in our frames. We can also request IR data, body tracking
+        data, and audio data. We don't need to deal with FrameSources separately from FrameReaders.
         <p>
-        Now that we're dealing with 3D data, we want to imagine the depth frame
-        as a bunch of points in space rather than a 640x480 image. So in our
-        <code>getDepthData</code> function, we will fill in our buffer with
-        the coordinates of each point (instead of the depth at each pixel).
-        This means the buffer we pass into it has to have size <code>width*height*3*sizeof(float)</code> for <code>float</code> typed coordinates.
-        <p>
+        We also initialize our <code>ICoordinateMapper</code> here.
+        <h3>Getting Data from a MultiSourceFrame</h3>
+        For both the depth data and the color data, we can get the familiar
+        <code>IDepthFrame</code> and <code>IColorFrame</code> from the <code>MultiSourceFrame</code>.
+        Here is the code for the depth data:
+        <pre class="prettyprint">
+void getKinectData() {
+    IMultiSourceFrame* frame = NULL;
+    reader->AcquireLatestFrame(&frame);
+    // ...
+    getDepthData(frame, dest);
+    // ...
+    getColorData(frame, dest;
+}
+
+void getDepthData(IMultiSourceFrame* frame, GLubyte* dest) {
+    IDepthFrame* depthframe;
+    IDepthFrameReference* frameref = NULL;
+    frame->get_DepthFrameReference(&frameref);
+    frameref->AcquireFrame(&depthframe);
+    if (frameref) frameref->Release();
+    if (!depthframe) return;
+
+    // Process depth frame data...
+
+    if (depthframe) depthframe->Release();
+}
+        </pre>
+
+        The code is almost identical for color data; just replace all
+        occurrences of "depth" with "color"
+
+        <h3>Using the Coordinate Mapper Interface</h3>
+        We are dealing with three different coordinate spaces in this program.
+        <ul>
+            <li>The 3D (XYZ) space, where the point cloud coordinates are in, is used for display.</li>
+            <li>The 2D (column, row) space of pixel coordinates in the 1920*1080 color image.</li>
+            <li>The 2D (column, row) space of pixel coordinates in the 512*424 depth image.</li>
+        </ul>
+         We will display one 3D point for every pixel in the depth image. Each
+         of these points will have an RGB color and then an XYZ coordinates.
+         Therefore, we will use the <code>CoordinateMapper</code> to get a lookup
+         table mapping between depth pixel coordinates and 3D point coordinates,
+         and another one mapping between depth pixel coordinates to the corresponding
+         pixel in the color image.
+
         <pre class="prettyprint">
 // Global Variables
-long depthToRgbMap[width*height*2];
+/*
+ For reference:
+ struct ColorSpacePoint { float X, Y; };
+ struct CameraSpacePoint { float X, Y, Z; };
+*/
+ColorSpacePoint depth2rgb[width*height];     // Maps depth pixels to rgb pixels
+CameraSpacePoint depth2xyz[width*height];    // Maps depth pixels to 3d coordinates
+
 // ...
-void getDepthData(GLubyte* dest) {
-// ...
-        const USHORT* curr = (const USHORT*) LockedRect.pBits;
-        float* fdest = (float*) dest;
-        long* depth2rgb = (long*) depthToRgbMap;
-        for (int j = 0; j < height; ++j) {
-            for (int i = 0; i < width; ++i) {
-                // Get depth of pixel in millimeters
-                USHORT depth = NuiDepthPixelToDepth(*curr);
-                // Store coordinates of the point corresponding to this pixel
-                Vector4 pos = NuiTransformDepthImageToSkeleton(i,j,*curr);
-                *fdest++ = pos.x/pos.w;
-                *fdest++ = pos.y/pos.w;
-                *fdest++ = pos.z/pos.w;
-                // Store the index into the color array corresponding to this pixel
-                NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution(
-                    NUI_IMAGE_RESOLUTION_640x480, // color frame resolution
-                    NUI_IMAGE_RESOLUTION_640x480, // depth frame resolution
-                    NULL,                         // pan/zoom of color image (IGNORE THIS)
-                    i, j, *curr,                  // Column, row, and depth in depth image
-                    depth2rgb, depth2rgb+1        // Output: column and row (x,y) in the color image
-                );
-                depth2rgb += 2;
-                *curr++;
-            }
-        }
-// ...
+
+void getDepthData(IMultiSourceFrame* frame, GLubyte* dest) {
+    IDepthFrame* depthframe;
+    // Populate depthframe from MultiSourceFrame...
+
+    // Get data from frame
+    unsigned int sz;
+    unsigned short* buf;
+    depthframe->AccessUnderlyingBuffer(&sz, &buf);
+
+    mapper->MapDepthFrameToCameraSpace(
+            width*height, buf,        // Depth frame data and size of depth frame
+            width*height, depth2xyz); // Output CameraSpacePoint array and size
+    mapper->MapDepthFrameToColorSpace(
+            width*height, buf,        // Depth frame data and size of depth frame
+            width*height, depth2rgb); // Output ColorSpacePoint array and size
+}
         </pre>
-        A lot of stuff here!
-        <ul>
-            <li> Vector4 is Microsoft's 3D point type in <b>homogeneous coordinates</b>. If your linear algebra is rusty, don't worry about homogeneous coordinates - just treat it as a 3D point with x,y,z coordinates. A short explanation can be found at <a href="http://sunshine2k.blogspot.com/2011/12/reason-for-homogeneous-4d-coordinates.html">http://sunshine2k.blogspot.com/2011/12/reason-for-homogeneous-4d-coordinates.html</a></li>
-            <li>NuiTransformDepthImageToSkeleton gives you the 3D coordinates of
-            a particular depth pixel. This is in the Kinect-based coordinate
-            system as described above. There is also a version of this function
-            that takes an additional resolution argument. </li>
-            <li>NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution is
-            takes the depth pixel (row, column, and depth in the depth image) and gives the row and column of the pixel in the color image. Here's the <a href="http://msdn.microsoft.com/en-us/library/jj663857.aspx">API reference page</a></li>.
-        </ul>
+        To get the mappings, we call into the appropriate <code>ICoordinateMapper</code>
+        functions. You can find other possible mappings in the
+        <a href='https://msdn.microsoft.com/en-us/library/windowspreview.kinect.coordinatemapper.aspx'><code>ICoordinateMapper</code> documentation</a>
+        Note that most mapping functions require the depth frame as an input array
+        (even the ones that don't start with "DepthFrame" in the name).
+
+        <h3> Getting depth data from the Kinect </h3>
+        Now that we're dealing with 3D data, we want to imagine the depth frame
+        as a bunch of points in space rather than a 512x424 image. So in our
+        <code>getDepthData</code> function, we will fill in our buffer with
+        the coordinates of each point (instead of the depth at each pixel).
+        This means the buffer we pass into it has to have size
+        <code>width*height*3*sizeof(float)</code> for <code>float</code>
+        typed coordinates. Here, we simply use the <code>depth2xyz</code>
+        map that we got from the <code>CoordinateMapper</code>.
+        <pre class="prettyprint">
+void getDepthData(IMultiSourceFrame* frame, GLubyte* dest) {
+// Populate depth2xyz map...
+    float* fdest = (float*)dest;
+    for (int i = 0; i < width*height i++) {
+        *fdest++ = depth2xyz[i].X;
+        *fdest++ = depth2xyz[i].Y;
+        *fdest++ = depth2xyz[i].Z;
+    }
+/* We use the fdest pointer for conciseness. Equivalently, we could use
+    for (int i = 0; i < width*height; i++) {
+        fdest[3*i+0] = depth2xyz[i].X;
+        fdest[3*i+1] = depth2xyz[i].Y;
+        fdest[3*i+2] = depth2xyz[i].Z;
+    }
+*/
+}
+</pre>
+
         <h3> Getting color data from the Kinect </h3>
         Now that we are thinking about things in terms of points instead of
         rectangular grids, we want our color output to be associated with a
-        particular depth point. In particular, the input to our <code>getRgbData</code> function, analogously to the <code>getDepthData</code> function, wants
-        a buffer of size <code>width*height*3*sizeof(float)</code> to hold the
+        particular depth point. In particular, the input to our
+        <code>getRgbData</code> function, analogously to the
+        <code>getDepthData</code> function, wants a buffer of size
+        <code>width*height*3*sizeof(float)</code> to hold the
         red, green, and blue values for each point in our point cloud.
-        <p>
         <pre class="prettyprint">
-void getRgbData(GLubyte* dest) {
-// ...
-        const BYTE* start = (const BYTE*) LockedRect.pBits;
-        float* fdest = (float*) dest;
-        long* depth2rgb = (long*) depthToRgbMap;
-        for (int j = 0; j < height; ++j) {
-            for (int i = 0; i < width; ++i) {
-                // Determine color pixel for depth pixel i,j
-                long x = *depth2rgb++;
-                long y = *depth2rgb++;
-                // If out of bounds, then do not color this pixel
-                if (x < 0 || y < 0 || x > width || y > height) {
-                    for (int n = 0; n < 3; ++n) *fdest++ = 0.f;
-                }
-                else {
-                    // Determine rgb color for depth pixel (i,j) from color pixel (x,y)
-                    const BYTE* color = start + (x+width*y)*4;
-                    for (int n = 0; n < 3; ++n) *fdest++ = color[2-n]/255.f;
-                }
-            }
+void getRgbData(IMultiSourceFrame* frame, GLubyte* dest) {
+    IColorFrame* colorframe;
+
+    // Populate colorframe...
+
+    colorframe->CopyConvertedFrameDataToArray(colorwidth*colorheight*4, rgbimage, ColorImageFormat_Rgba);
+
+    // Write color array for vertices
+    float* fdest = (float*)dest;
+    for (int i = 0; i < width*height; i++) {
+        ColorSpacePoint p = depth2rgb[i];
+        // Check if color pixel coordinates are in bounds
+        if (p.X < 0 || p.Y < 0 || p.X > colorwidth || p.Y > colorheight) {
+            *fdest++ = 0;
+            *fdest++ = 0;
+            *fdest++ = 0;
         }
-// ...
+        else {
+            int idx = (int)p.X + colorwidth*(int)p.Y;
+            *fdest++ = rgbimage[4*idx + 0]/255.;
+            *fdest++ = rgbimage[4*idx + 1]/255.;
+            *fdest++ = rgbimage[4*idx + 2]/255.;
+        }
+        // Don't copy alpha channel
+    }
+    /* We use fdest pointer for conciseness; Equivalently, we could use
+
+    for (int i = 0; i < width*height; i++) {
+        fdest[3*i+0] = ...
+        fdest[3*i+1] = ...
+        fdest[3*i+2] = ...
+    }
+     */
+ }
         </pre>
+        In this block, we iterate through the pixels of the depth image,
+        looking up the associated coordinates in the color image using
+        the <code>depth2rgb</code> map we obtained from the <code>CoordinateMapper</code>.
+        We check whether the depth pixel actually projects to a pixel in the RGB
+        image, and if it does not, then we just assign that point a black color.
+        <br>
         There's a bit of funny math in those last couple of lines, so let's walk
-        through it. First of all, the color image frame is in BGRA format, one
+        through it. First of all, the color image frame is in RGBA format, one
         byte per channel, laid out row by row. So the linear index for pixel
-        (x,y) is <code>x + width*y</code>. Then, the 4-byte block we want is
-        at <code>start + linearindex*4</code>. Finally, we want to convert from
-        byte-valued (0-255) BGRA into float-valued (0.0-1.0) RGB, so we reverse
-        the order of the bytes and divide by 255: <code>color[2-n]/255.f</code>.
+        (x,y) is <code>x + width*y</code>. X and Y can be floating point, so we
+        round them down before using them as an array index by casting to int.
+        Then, the 4-byte block we want is at <code>linearindex*4</code>.
+        Finally, we want to convert from byte-valued (0-255) RGBA into
+        float-valued (0.0-1.0) RGB, so we take the first 3 channels and divide
+        by 255: <code>rgbimage[4*linearindex + channel]/255.f</code>.
 
         <hr>
         <h2><a name='opengl'>OpenGL Display</a></h2>
@@ -236,10 +323,13 @@ GLuint cboId; // Color buffer ID
     glClearDepth(1.0f);
 
     // Set up array buffers
+    const int dataSize = width*height * 3 * 4;
     glGenBuffers(1, &vboId);
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_DYNAMIC_DRAW);
     glGenBuffers(1, &cboId);
     glBindBuffer(GL_ARRAY_BUFFER, cboId);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_DYNAMIC_DRAW);
 
     // Camera setup
     glViewport(0, 0, width, height);
@@ -258,27 +348,27 @@ GLuint cboId; // Color buffer ID
         <hr>
         <h2><a name='puttingittogether'>Putting it all together</a></h2>
         We wrote those nice functions getDepthData and getRgbData, but how
-        do we use them? What we do is allocate some memory on the GPU and then
-        use our functions to copy our point cloud data there.
+        do we use them? We want to copy the appropriate data from our
+        MultiSourceFrame onto the GPU.
         <pre class="prettyprint">
 void getKinectData() {
-    const int dataSize = width*height*3*sizeof(float);
-    GLubyte* ptr;
-    glBindBuffer(GL_ARRAY_BUFFER, vboId);
-    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_DYNAMIC_DRAW);
-    ptr = (GLubyte*) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    if (ptr) {
-        getDepthData(ptr);
+    IMultiSourceFrame* frame = NULL;
+    if (SUCCEEDED(reader->AcquireLatestFrame(&frame))) {
+        GLubyte* ptr;
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (ptr) {
+            getDepthData(frame, ptr);
+        }
+        glUnmapBuffer(GL_ARRAY_BUFFER);
+        glBindBuffer(GL_ARRAY_BUFFER, cboId);
+        ptr = (GLubyte*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        if (ptr) {
+            getRgbData(frame, ptr);
+        }
+        glUnmapBuffer(GL_ARRAY_BUFFER);
     }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    glBindBuffer(GL_ARRAY_BUFFER, cboId);
-    glBufferData(GL_ARRAY_BUFFER, dataSize, 0, GL_DYNAMIC_DRAW);
-    ptr = (GLubyte*) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    if (ptr) {
-        getRgbData(ptr);
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
+    if (frame) frame->Release();
 }
         </pre>
 
